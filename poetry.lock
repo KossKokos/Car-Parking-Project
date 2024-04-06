@@ -3,7 +3,7 @@
 [[package]]
 name = "alembic"
 version = "1.13.1"
-description = "A database migration tool for SQLAlchemy."
+description = "A database migration tool for a SQLAlchemy."
 optional = false
 python-versions = ">=3.8"
 files = [
