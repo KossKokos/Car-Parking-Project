@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, func, CheckConstraint, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, func, CheckConstraint, Numeric
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql.sqltypes import DateTime
 
@@ -59,8 +59,8 @@ class Parking(Base):
     places_quantity = Column(Integer)
     status = Column(Boolean, default=False) #Free -false / true - occupated
     license_plate = Column('lcense_plate', ForeignKey('cars_table.license_plate', ondelete='CASCADE'))
-    amount_paid = Column(float)
-    duration = Column(float)
+    amount_paid = Column(Numeric)
+    duration = Column(Numeric)
     car = relationship("Car", uselist=False, back_populates="parking_place")
 
 """
