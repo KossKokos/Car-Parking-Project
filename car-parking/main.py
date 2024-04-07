@@ -5,8 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text 
 
-from src.routes import auth, users, images, rating, comments
-
+from src.routes import auth, users
 from src.database.db import get_db
 
 
@@ -15,9 +14,9 @@ app = FastAPI(debug=True)
 # # create route so i don't need to add contacts/... everytime to my routes functions
 app.include_router(auth.router, prefix='/api')
 app.include_router(users.router, prefix='/api')
-app.include_router(images.router, prefix='/api')
-app.include_router(rating.router, prefix='/api')
-app.include_router(comments.router, prefix='/api')
+# app.include_router(images.router, prefix='/api')
+# app.include_router(rating.router, prefix='/api')
+# app.include_router(comments.router, prefix='/api')
 
 
 @app.get("/")

@@ -24,9 +24,9 @@ class User(Base):
     password = Column(String(100), nullable=False)
     created_at = Column('created_at', DateTime, default=func.now())
     refresh_token = Column(String(255), nullable=True)
-    confirmed = Column(Boolean, default=False)
+    confirmed = Column(Boolean, default=False)# email confirmed
     role = Column(String(20), nullable=False, default='user')
-    license_plate = Column('lcense_plate', ForeignKey('cars_table.license_plate', ondelete='CASCADE'), unique=True)
+    license_plate = Column('license_plate', ForeignKey('cars_table.license_plate', ondelete='CASCADE'), unique=True)
     blacklisted_token = relationship('BlacklistedToken', uselist=False, back_populates='user')
     cars = relationship('Car', uselist=True, back_populates='user')
 
@@ -56,9 +56,8 @@ class Parking(Base):
     id = Column(Integer, primary_key=True)
     enter_time = Column(DateTime(timezone=True), server_default=func.now())
     departure_time = Column(DateTime(timezone=True))
-    places_quantity = Column(Integer)
     status = Column(Boolean, default=False) #Free -false / true - occupated
-    license_plate = Column('lcense_plate', ForeignKey('cars_table.license_plate', ondelete='CASCADE'))
+    license_plate = Column('license_plate', ForeignKey('cars_table.license_plate', ondelete='CASCADE'))
     amount_paid = Column(Numeric)
     duration = Column(Numeric)
     car = relationship("Car", uselist=False, back_populates="parking_place")
