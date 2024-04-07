@@ -1,21 +1,19 @@
 """'init'
 
-Revision ID: 53489f9a3801
+Revision ID: 9f661b736e1f
 Revises: 
-Create Date: 2024-04-06 23:06:52.943292
+Create Date: 2024-04-07 22:37:22.934373
 
 """
-from typing import Sequence, Union
-
 from alembic import op
 import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '53489f9a3801'
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+revision = '9f661b736e1f'
+down_revision = None
+branch_labels = None
+depends_on = None
 
 
 def upgrade() -> None:
@@ -31,12 +29,11 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('enter_time', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('departure_time', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('places_quantity', sa.Integer(), nullable=True),
     sa.Column('status', sa.Boolean(), nullable=True),
-    sa.Column('lcense_plate', sa.String(length=30), nullable=True),
+    sa.Column('license_plate', sa.String(length=30), nullable=True),
     sa.Column('amount_paid', sa.Numeric(), nullable=True),
     sa.Column('duration', sa.Numeric(), nullable=True),
-    sa.ForeignKeyConstraint(['lcense_plate'], ['cars_table.license_plate'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['license_plate'], ['cars_table.license_plate'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('users_table',
@@ -48,12 +45,12 @@ def upgrade() -> None:
     sa.Column('refresh_token', sa.String(length=255), nullable=True),
     sa.Column('confirmed', sa.Boolean(), nullable=True),
     sa.Column('role', sa.String(length=20), nullable=False),
-    sa.Column('lcense_plate', sa.String(length=30), nullable=True),
+    sa.Column('license_plate', sa.String(length=30), nullable=True),
     sa.CheckConstraint("role IN ('admin', 'user')", name='check_valid_role'),
-    sa.ForeignKeyConstraint(['lcense_plate'], ['cars_table.license_plate'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['license_plate'], ['cars_table.license_plate'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('lcense_plate'),
+    sa.UniqueConstraint('license_plate'),
     sa.UniqueConstraint('username')
     )
     op.create_table('blacklisted_tokens',

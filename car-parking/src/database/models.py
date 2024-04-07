@@ -5,16 +5,6 @@ from sqlalchemy.sql.sqltypes import DateTime
 
 Base = declarative_base()
 
-"""User:
-    name = ...
-    password =
-    email = ...
-    plate_number.id = foreign_key(Car)
-    role = ...
-    tariff = enum
-    # max_limit"""
-
-
 class User(Base):
     __tablename__ = "users_table"
 
@@ -25,6 +15,7 @@ class User(Base):
     created_at = Column('created_at', DateTime, default=func.now())
     refresh_token = Column(String(255), nullable=True)
     confirmed = Column(Boolean, default=False)# email confirmed
+    banned = Column(Boolean, default=False)
     role = Column(String(20), nullable=False, default='user')
     license_plate = Column('license_plate', ForeignKey('cars_table.license_plate', ondelete='CASCADE'), unique=True)
     blacklisted_token = relationship('BlacklistedToken', uselist=False, back_populates='user')
@@ -40,15 +31,6 @@ class User(Base):
     def __str__(self):
         return str(self.id)
 
-"""
-parking:
-    enter_time = ...
-    exit_time = ...
-    Car = foreign_key(Car)
-    status = enum
-    duration = exit_time - enter_time (minutes)
-    amount_paid = ...
-"""
 
 class Parking(Base):
     __tablename__ = "parking_places_table"
