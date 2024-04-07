@@ -1,23 +1,16 @@
-from typing import Optional
-from fastapi import HTTPException
-from sqlalchemy.orm import Session
-from src.database.models import User
-from src.database import db
+from typing import Type
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session, joinedload
+from ..database.models import User  
 
-class UserService:
-    def get_user_by_id(self, user_id: int) -> Optional[User]:
-        user = db.query(User).filter(User.id == user_id).first()
-        return user
+async def get_user_by_email(email: str, db: Session) -> User | None:
+    return db.query(User).filter_by(email=email).first()
 
-    def update_user(self, db: Session, user_id: int, new_data: dict) -> bool:
-        user = self.get_user_by_id(user_id)
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        for key, value in new_data.items():
-            setattr(user, key, value)
-        try:
-            db.commit()
-            return True
-        except Exception as e:
-            db.rollback()
-            raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
+async def admin_edit_user(user_id, new_data):  
+    user_service = UserService()  
+    user_info = await get_user_by_email(user_id)
+    if user_info:
+        user_service.update_user(user_id, new_data)
+        print("Інформація про користувача успішно оновлена.")
+    else:
+        print("Користувача з таким ID не знайдено.")
