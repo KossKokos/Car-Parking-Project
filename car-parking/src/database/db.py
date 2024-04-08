@@ -1,23 +1,43 @@
-from fastapi import HTTPException, status
+from contextlib import contextmanager
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import SQLAlchemyError
-
+from sqlalchemy.orm import sessionmaker, Session
 from src.conf.config import settings
 
-URI = settings.sqlalchemy_database_url
 
-engine = create_engine(URI, echo=True)
-DBSession = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+SQLALCHEMY_DATABASE_URL = settings.sqlalchemy_database_url
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Dependency
 def get_db():
-    db = DBSession()
+    """
+    The get_db function opens a new database connection if there is none yet for the current application context.
+    It will also create the database tables if they don’t exist yet.
+    
+    :return: A database session
+    """
+    db = SessionLocal()
     try:
         yield db
-    except SQLAlchemyError as err:
-        db.rollback()
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
     finally:
         db.close()
+
+@contextmanager
+def db_transaction(session: Session):
+    """
+    The db_transaction function is a context manager that wraps the session object in a try/except block.
+    If an exception occurs, it rolls back the transaction and raises the exception. If no exceptions occur,
+    it commits the transaction and closes out the session.
+    
+    :param session: Session: Pass the session object to the function
+    :return: A context manager
+    """
+    try:
+        yield session
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        raise e
+    finally:
+        session.close()

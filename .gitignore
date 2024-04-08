@@ -1,3 +1,7 @@
 car-parking/.env
 car-parking/idea
 car-parking/poetry.lock
+car-parking/.venv
+car-parking/postgres-data
+Car-Parking-Project/.vscode
+car-parking/__pycache__
