@@ -119,40 +119,19 @@ async def change_password(user: User, new_password: str, db: Session) -> None:
 #     db.refresh(user)
 #     return user
 
-# transfered to the repository/admin.py
-# async def get_user_by_id(user_id: int, db: Session) -> User | None:
-#     """
-#     The get_user_by_id function returns a User object from the database, given an id.
-#         Args:
-#             user_id (int): The id of the user to be retrieved.
-#             db (Session): A Session instance for interacting with the database.
+async def get_user_by_id(user_id: int, db: Session) -> User | None:
+    """
+    The get_user_by_id function returns a User object from the database, given an id.
+        Args:
+            user_id (int): The id of the user to be retrieved.
+            db (Session): A Session instance for interacting with the database.
     
-#     :param user_id: int: Specify the type of parameter that is expected to be passed in
-#     :param db: Session: Pass the database session to the function
-#     :return: A user object or none
-#     :doc-author: Trelent
-#     """
-#     return db.query(User).filter(User.id==user_id).first()
-
-# transfered to the repository/admin.py
-# async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
-#     """
-#     The change_user_role function changes the role of a user.
-#         Args:
-#             user (User): The User object to change the role of.
-#             body (UserRoleUpdate): A UserRoleUpdate object containing the new role for this user.
-#             db (Session): The database session to use when changing this users' role in our database.
-    
-#     :param user: User: Get the user object from the database
-#     :param body: UserRoleUpdate: Get the role from the request body
-#     :param db: Session: Access the database
-#     :return: A user object with updated role
-#     :doc-author: Trelent
-#     """
-#     user.role = body.role
-#     db.commit()
-#     db.refresh(user)
-#     return user
+    :param user_id: int: Specify the type of parameter that is expected to be passed in
+    :param db: Session: Pass the database session to the function
+    :return: A user object or none
+    :doc-author: Trelent
+    """
+    return db.query(User).filter(User.id==user_id).first()
     
     
 async def delete_user(user_id: int, db: Session) -> None:
