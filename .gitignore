@@ -1,7 +1,8 @@
-car-parking/.env
-car-parking/idea
-car-parking/poetry.lock
-car-parking/.venv
-car-parking/postgres-data
-Car-Parking-Project/.vscode
-car-parking/__pycache__
+car_parking/.env
+car_parking/idea
+car_parking/poetry.lock
+car_parking/.venv
+car_parking/postgres-data
+Car_Parking-Project/.vscode
+.vscode
+**/__pycache__
