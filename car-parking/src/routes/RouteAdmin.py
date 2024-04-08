@@ -1,11 +1,17 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from src.database import db
+from ..database import db
 from src.repository.AdminService import AdminService
-from src.database.models import User
+from ..database.models import User
+from ..database import get_db
 
 router = APIRouter()
 
+@router.get("/admin/users")
+def get_all_users(db: Session = Depends(get_db)):
+    admin_service = AdminService()
+    users = admin_service.get_all_users(db)
+    return users
 
 @router.put("/admin/users/{user_id}")
 async def admin_update_user(user_id: int, new_data: dict, db: Session = Depends(db.get_db)):

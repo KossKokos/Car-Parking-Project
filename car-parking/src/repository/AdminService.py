@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from src.database.models import User
+from ..database.models import User
 from ..database import db
 
 import sys
@@ -29,4 +29,8 @@ class AdminService:
         except Exception as e:
             db.rollback()
             raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
+        
+    def get_all_users(self, db: Session) -> List[User]:
+        users = db.query(User).all()
+        return users
 
