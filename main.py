@@ -5,7 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text 
 
-from car_parking.src.routes import auth, users
+from car_parking.src.routes import auth, users, admin
 from car_parking.src.database.db import get_db
 
 app = FastAPI(debug=True)
@@ -13,7 +13,7 @@ app = FastAPI(debug=True)
 # # create route so i don't need to add contacts/... everytime to my routes functions
 app.include_router(auth.router, prefix='/api')
 app.include_router(users.router, prefix='/api')
-# app.include_router(images.router, prefix='/api')
+app.include_router(admin.router, prefix='/api')
 # app.include_router(rating.router, prefix='/api')
 # app.include_router(comments.router, prefix='/api')
 

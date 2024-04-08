@@ -14,7 +14,6 @@ class UserResponce(BaseModel):
     username: str = 'username'
     email: EmailStr = 'example@gmail.com'
     password: str = 'password'
-    avatar: Optional[str] = None
     role: str = "role"
     banned: Optional[bool] = None
 
