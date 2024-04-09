@@ -6,7 +6,7 @@ from ..database.db import get_db
 from ..database.models import User
 from ..repository import users as repository_users
 from ..services.auth import service_auth
-from ..schemas.users import UserResponce, UserParkingResponse
+from ..schemas.users import UserResponse, UserParkingResponse
 from ..schemas.parking import ParkingInfo
 from ..services import (
     roles as service_roles,
@@ -21,7 +21,7 @@ allowd_operation = service_roles.RoleRights(["user", "moderator", "admin"])
 allowd_operation_by_admin = service_roles.RoleRights(["admin"])
 
 
-@router.get('/me', response_model=UserParkingResponse,z
+@router.get('/me', response_model=UserParkingResponse,
             status_code=status.HTTP_200_OK,
             dependencies=[Depends(service_logout.logout_dependency),
                           Depends(allowd_operation),

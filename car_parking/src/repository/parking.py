@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 # from src.database.models import User, Image
 from ..database.models import User, Parking, Car
-from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponce
+from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponse
 from ..schemas.parking import CurrentParking, ParkingResponse, ParkingInfo, ParkingSchema
 from ..repository.car import create_car
 from ..conf.tariffs import STANDART, AUTORIZED

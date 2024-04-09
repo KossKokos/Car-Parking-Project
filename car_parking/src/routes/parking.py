@@ -7,7 +7,7 @@ from ..database.models import User
 from ..repository import users as repository_users
 from ..repository import parking as repository_parking
 from ..services.auth import service_auth
-from ..schemas.users import UserResponce, UserParkingResponse
+from ..schemas.users import UserResponse, UserParkingResponse
 from ..schemas.parking import ParkingInfo, ParkingSchema
 from ..services import (
     roles as service_roles,

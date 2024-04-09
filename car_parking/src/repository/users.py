@@ -4,11 +4,12 @@ from sqlalchemy.orm import Session
  
 # from src.database.models import User, Image
 from ..database.models import User, Parking
-from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponce
+from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponse
 from ..schemas.parking import CurrentParking, ParkingResponse, ParkingInfo
 
 from ..conf.tariffs import STANDART, AUTORIZED
 from datetime import datetime, timezone
+
 
 def calculate_datetime_difference(start_time, end_time):
     time_difference = end_time - start_time
@@ -170,7 +171,7 @@ async def get_user_me(user: User, db: Session):
         current_cost = calculate_cost(time_on_parking, AUTORIZED)
 
         user_park = UserParkingResponse(
-            user=UserResponce(username=user.username,
+            user=UserResponse(username=user.username,
                               email=user.email,
                               license_plate=user.license_plate),
             parking=CurrentParking(enter_time=user_parking.enter_time,
@@ -180,7 +181,7 @@ async def get_user_me(user: User, db: Session):
         )
         return user_park
     user_park = UserParkingResponse(
-        user=UserResponce(username=user.username,
+        user=UserResponse(username=user.username,
                           email=user.email,
                           license_plate=user.license_plate),
 

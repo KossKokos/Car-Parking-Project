@@ -10,14 +10,14 @@ class UserModel(BaseModel):
     license_plate: str
 
       
-class UserResponce(BaseModel):
+class UserResponse(BaseModel):
     username: str = 'username'
     email: EmailStr = 'example@gmail.com'
     license_plate: str
 
 
 class UserParkingResponse(BaseModel):
-    user: UserResponce
+    user: UserResponse
     parking: CurrentParking | str
 
     class Config:
