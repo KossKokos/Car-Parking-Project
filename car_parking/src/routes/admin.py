@@ -4,7 +4,11 @@ from sqlalchemy.orm import Session
 
 from ..database.db import get_db
 from ..database.models import User
-from ..repository import users as repository_users, admin as repository_admin, cars as repository_cars
+from ..repository import (
+    users as repository_users, 
+    admin as repository_admin, 
+    cars as repository_cars
+)
 from ..services.auth import service_auth
 from ..schemas.users import UserResponse, UserRoleUpdate
 from ..schemas.cars import CarResponse
@@ -71,7 +75,7 @@ async def ban_user(user_id:str,
     if user.id == 1:
         raise HTTPException(status_code=403, detail="Permission denied.Superadmin status cannot be changed.")
 
-    await repository_users.update_banned_status(user, db)
+    await repository_admin.update_banned_status(user, db)
     return user
 
 @router.patch('/unban/{user_id}', 
@@ -105,7 +109,7 @@ async def unban_user(user_id:str,
     if user.id == 1:
         raise HTTPException(status_code=403, detail="Permission denied.Superadmin status cannot be changed.")
 
-    await repository_users.update_unbanned_status(user, db)
+    await repository_admin.update_unbanned_status(user, db)
     return user
 
 @router.delete('/{user_id}',
@@ -233,7 +237,7 @@ async def ban_car(license_plate:str,
                         "car id": car.id,
                         "license plate":car.license_plate,
                         "car ban status": car.banned,
-                        "banned user id": "not registrated user",
+                        "banned user id": "not registered user",
                         "banned user email": "N/A",
                         "user ban status": "N/A",
                         }
@@ -273,7 +277,7 @@ async def unban_car(license_plate:str,
                         "car id": car.id,
                         "license plate":car.license_plate,
                         "car ban status": car.banned,
-                        "unbanned user id": "not registrated user",
+                        "unbanned user id": "not registered user",
                         "unbanned user email": "N/A",
                         "user ban status": "N/A",
                         }
