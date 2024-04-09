@@ -1,8 +1,23 @@
+import pytz
 from sqlalchemy.orm import Session
 
-#from src.database.models import User, Image
-from ..database.models import User
-from ..schemas.users import UserModel, UserRoleUpdate
+# from src.database.models import User, Image
+from ..database.models import User, Parking
+from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponce
+from ..schemas.parking import CurrentParking, ParkingResponse, ParkingInfo
+
+from ..conf.tariffs import STANDART, AUTORIZED
+from datetime import datetime, timezone
+
+
+def calculate_datetime_difference(start_time, end_time):
+    time_difference = end_time - start_time
+    hours = time_difference.days * 24 + time_difference.seconds / 3600
+    return float(hours)
+
+
+def calculate_cost(hours, cost):
+    return hours * cost
 
 
 async def create_user(body: UserModel, db: Session) -> User:
@@ -34,7 +49,7 @@ async def get_user_by_email(email: str, db: Session) -> User | None:
     :param db: Session: Pass the database session to the function
     :return: A user object or none if the user is not found
     """
-    return db.query(User).filter(User.email==email).first()
+    return db.query(User).filter(User.email == email).first()
 
 
 async def get_user_by_username(username: str, db: Session) -> User | None:
@@ -47,7 +62,8 @@ async def get_user_by_username(username: str, db: Session) -> User | None:
     :param db: Session: Pass the database session to the function
     :return: A user object or none if the user is not found
     """
-    return db.query(User).filter(User.username==username).first()
+    return db.query(User).filter(User.username == username).first()
+
 
 async def update_token(user: User, refresh_token: str, db: Session) -> None:
     """
@@ -102,12 +118,12 @@ async def change_password(user: User, new_password: str, db: Session) -> None:
 async def update_avatar(email, url: str, db: Session) -> User:
     """
     The update_avatar function updates the avatar of a user.
-    
+
     Args:
         email (str): The email address of the user to update.
         url (str): The URL for the new avatar image.
         db (Session, optional): A database session object.
-    
+
     :param email: Find the user in the database
     :param url: str: The URL for the new avatar image
     :param db: Session: Pass the database session to the function
@@ -132,7 +148,7 @@ async def get_user_by_id(user_id: int, db: Session) -> User | None:
     :return: A user object or none
     :doc-author: Trelent
     """
-    return db.query(User).filter(User.id==user_id).first()
+    return db.query(User).filter(User.id == user_id).first()
 
 
 async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
@@ -153,8 +169,8 @@ async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> Use
     db.commit()
     db.refresh(user)
     return user
-    
-    
+
+
 async def delete_user(user_id: int, db: Session) -> None:
     """
     The delete_user function deletes a user from the database based on the user ID.
@@ -167,22 +183,23 @@ async def delete_user(user_id: int, db: Session) -> None:
     if user:
         db.delete(user)
         db.commit()
-    return None 
+    return None
 
-async def get_imagis_quantity(user:User, db: Session):
-    """
-    The get_imagis_quantity function returns the number of images that a user has uploaded to the database.
-        Args:
-            user (User): The User object whose image quantity is being requested.
-            db (Session): The database session used for querying and updating data in the database.
-    
-    :param user:User: Get the user_id of the user
-    :param db: Session: Connect to the database and query it
-    :return: The quantity of images that a user has uploaded to the database
-    """
-    all_images = db.query(Image).filter_by(user_id = user.id).all()
-    quantity_of_loaded_images = len(all_images)
-    return quantity_of_loaded_images
+
+# async def get_imagis_quantity(user:User, db: Session):
+#     """
+#     The get_imagis_quantity function returns the number of images that a user has uploaded to the database.
+#         Args:
+#             user (User): The User object whose image quantity is being requested.
+#             db (Session): The database session used for querying and updating data in the database.
+#
+#     :param user:User: Get the user_id of the user
+#     :param db: Session: Connect to the database and query it
+#     :return: The quantity of images that a user has uploaded to the database
+#     """
+#     all_images = db.query(Image).filter_by(user_id = user.id).all()
+#     quantity_of_loaded_images = len(all_images)
+#     return quantity_of_loaded_images
 
 async def return_all_users(db: Session) -> dict:
     """
@@ -194,6 +211,7 @@ async def return_all_users(db: Session) -> dict:
     users = db.query(User).all()
     usernames = {f"username(id: {user.id})": user.username for user in users}
     return usernames
+
 
 async def update_banned_status(user: User, db: Session):
     """
@@ -210,6 +228,7 @@ async def update_banned_status(user: User, db: Session):
     db.refresh(user)
     return user
 
+
 async def update_unbanned_status(user: User, db: Session):
     """
     The update_гтbanned_status function updates the banned status of a user for unbanned.
@@ -225,3 +244,40 @@ async def update_unbanned_status(user: User, db: Session):
     db.refresh(user)
     return user
 
+
+async def get_parking_info(user: User, db: Session):
+    parking_info = db.query(Parking).filter(Parking.license_plate == user.license_plate, Parking.status == True).all()
+    parking_history = ParkingInfo(user=user.username, parking_info=[])
+    for parking in parking_info:
+        parking_history.parking_info.append(ParkingResponse(enter_time=parking.enter_time,
+                                                            departure_time=parking.departure_time,
+                                                            license_plate=parking.license_plate,
+                                                            amount_paid=parking.amount_paid,
+                                                            duration=parking.duration,
+                                                            status=parking.status))
+    return parking_history
+
+
+async def get_user_me(user: User, db: Session):
+    user_parking = db.query(Parking).filter(Parking.license_plate == user.license_plate, Parking.status == False).first()
+    if user_parking:
+        time_on_parking = calculate_datetime_difference(user_parking.enter_time, datetime.now(pytz.timezone('Europe/Kiev')))
+        current_cost = calculate_cost(time_on_parking, AUTORIZED)
+
+        user_park = UserParkingResponse(
+            user=UserResponce(username=user.username,
+                              email=user.email,
+                              license_plate=user.license_plate),
+            parking=CurrentParking(enter_time=user_parking.enter_time,
+                                   time_on_parking=time_on_parking,
+                                   parking_cost=current_cost
+                                   )
+        )
+        return user_park
+    user_park = UserParkingResponse(
+        user=UserResponce(username=user.username,
+                          email=user.email,
+                          license_plate=user.license_plate),
+
+        parking="You don't have a car parked right now.")
+    return user_park

@@ -5,7 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text 
 
-from car_parking.src.routes import auth, users
+from car_parking.src.routes import auth, users, parking
 from car_parking.src.database.db import get_db
 
 app = FastAPI(debug=True)
@@ -13,6 +13,7 @@ app = FastAPI(debug=True)
 # # create route so i don't need to add contacts/... everytime to my routes functions
 app.include_router(auth.router, prefix='/api')
 app.include_router(users.router, prefix='/api')
+app.include_router(parking.router, prefix='/api')
 # app.include_router(images.router, prefix='/api')
 # app.include_router(rating.router, prefix='/api')
 # app.include_router(comments.router, prefix='/api')
@@ -51,6 +52,7 @@ def healthchecker(db: Session = Depends(get_db)):
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Error connecting to the database")
-    
+
+
 if __name__ == '__main__':
     uvicorn.run('main:app', host='127.0.0.1', port=8000, reload=True)
