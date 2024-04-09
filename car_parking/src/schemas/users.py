@@ -9,7 +9,7 @@ class UserModel(BaseModel):
     password: str = Field(min_length=8, max_length=15, default='password')
 
 
-class UserResponce(BaseModel):
+class UserResponse(BaseModel):
     id: int = 1
     username: str = 'username'
     email: EmailStr = 'example@gmail.com'

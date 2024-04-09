@@ -4,9 +4,10 @@ from sqlalchemy.orm import Session
 
 from ..database.db import get_db
 from ..database.models import User
-from ..repository import users as repository_users, admin as repository_admin
+from ..repository import users as repository_users, admin as repository_admin, cars as repository_cars
 from ..services.auth import service_auth
-from ..schemas.users import UserResponce, UserRoleUpdate
+from ..schemas.users import UserResponse, UserRoleUpdate
+from ..schemas.cars import CarResponse
 from ..services import (
     roles as service_roles,
     logout as service_logout,
@@ -42,7 +43,7 @@ async def get_all_usernames(current_user: User = Depends(service_auth.get_curren
 
 
 @router.patch('/ban/{user_id}', 
-                        response_model=UserResponce, 
+                        response_model=UserResponse, 
                         status_code=status.HTTP_200_OK,
                         dependencies=[Depends(service_logout.logout_dependency), 
                                       Depends(allowd_operation_by_admin)],
@@ -76,7 +77,7 @@ async def ban_user(user_id:str,
     return user
 
 @router.patch('/unban/{user_id}', 
-                        response_model=UserResponce, 
+                        response_model=UserResponse, 
                         status_code=status.HTTP_200_OK,
                         dependencies=[Depends(service_logout.logout_dependency), 
                                       Depends(allowd_operation_by_admin)],
@@ -140,7 +141,7 @@ async def delete_user(user_id: int, current_user: User = Depends(service_auth.ge
     return {"message": f"User successfully deleted"}
 
 
-@router.patch('/change_role/{user_id}', response_model=UserResponce, 
+@router.patch('/change_role/{user_id}', response_model=UserResponse, 
                                         status_code=status.HTTP_202_ACCEPTED,
                                         dependencies=[Depends(service_logout.logout_dependency), 
                                                       Depends(allowd_operation_by_admin)])
@@ -177,3 +178,106 @@ async def change_user_role(
         return user
     else:
         raise HTTPException(status_code=400, detail="Invalid role provided")
+
+########## 
+#option with car response
+# @router.patch('/ban_car/{license_plate}', 
+#                         response_model=CarResponse,
+#                         status_code=status.HTTP_200_OK,
+#                         dependencies=[Depends(service_logout.logout_dependency), 
+#                                       Depends(allowd_operation_by_admin)],
+#                         )
+# async def ban_car(license_plate:str,
+#                                 credentials: HTTPAuthorizationCredentials = Security(security), 
+#                                 current_user: User = Depends(service_auth.get_current_user),
+#                                 db: Session = Depends(get_db)):
+
+
+#     car = await repository_cars.get_car_by_license_plate(license_plate, db)
+#     if not car:
+#         raise HTTPException(status_code=404, detail="Car not found")
+#     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
+#     if user and user.id != 1:
+#         await repository_users.ban_user(user, db)
+#     await repository_cars.update_car_banned_status(car, db)
+#     return car
+
+@router.patch('/ban_car/{license_plate}', 
+                        #response_model=CarResponse,
+                        status_code=status.HTTP_200_OK,
+                        dependencies=[Depends(service_logout.logout_dependency), 
+                                      Depends(allowd_operation_by_admin)],
+                        )
+async def ban_car(license_plate:str,
+                                credentials: HTTPAuthorizationCredentials = Security(security), 
+                                current_user: User = Depends(service_auth.get_current_user),
+                                db: Session = Depends(get_db)):
+
+
+    car = await repository_cars.get_car_by_license_plate(license_plate, db)
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
+    if user and user.id != 1:
+        await repository_users.ban_user(user, db)
+    await repository_cars.update_car_banned_status(car, db)
+    if user:
+        car_banned_response = {
+                        "car id": car.id,
+                        "license plate":car.license_plate,
+                        "car ban status": car.banned,
+                        "banned user id":user.id,
+                        "banned user email":user.email,
+                        "user ban status": user.banned,
+                        }
+    else:
+        car_banned_response = {
+                        "car id": car.id,
+                        "license plate":car.license_plate,
+                        "car ban status": car.banned,
+                        "banned user id": "not registrated user",
+                        "banned user email": "N/A",
+                        "user ban status": "N/A",
+                        }
+
+    return car_banned_response
+
+@router.patch('/unban_car/{license_plate}', 
+                        #response_model=CarResponse,
+                        status_code=status.HTTP_200_OK,
+                        dependencies=[Depends(service_logout.logout_dependency), 
+                                      Depends(allowd_operation_by_admin)],
+                        )
+async def unban_car(license_plate:str,
+                                credentials: HTTPAuthorizationCredentials = Security(security), 
+                                current_user: User = Depends(service_auth.get_current_user),
+                                db: Session = Depends(get_db)):
+
+
+    car = await repository_cars.get_car_by_license_plate(license_plate, db)
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
+    if user and user.id != 1:
+        await repository_users.update_unbanned_status(user, db)
+    await repository_cars.update_car_unbanned_status(car, db)
+    if user:
+        car_banned_response = {
+                        "car id": car.id,
+                        "license plate":car.license_plate,
+                        "car ban status": car.banned,
+                        "banned user id":user.id,
+                        "banned user email":user.email,
+                        "user ban status": user.banned,
+                        }
+    else:
+        car_banned_response = {
+                        "car id": car.id,
+                        "license plate":car.license_plate,
+                        "car ban status": car.banned,
+                        "banned user id": "not registrated user",
+                        "banned user email": "N/A",
+                        "user ban status": "N/A",
+                        }
+
+    return car_banned_response
