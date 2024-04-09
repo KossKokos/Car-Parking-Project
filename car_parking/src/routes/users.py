@@ -6,12 +6,11 @@ from ..database.db import get_db
 from ..database.models import User
 from ..repository import users as repository_users
 from ..services.auth import service_auth
-from ..schemas.users import UserResponce
+from ..schemas.users import UserResponse
 from ..services import (
     roles as service_roles,
     logout as service_logout,
     banned as service_banned,
-    cloudinary as service_cloudinary
 )
 
 
@@ -21,28 +20,7 @@ security = HTTPBearer()
 allowd_operation = service_roles.RoleRights(["user", "moderator", "admin"])
 allowd_operation_by_admin = service_roles.RoleRights(["admin"])
 
-# transferd to routes/admin.py 
-# @router.get('/',
-#             status_code=status.HTTP_200_OK,
-#             dependencies=[Depends(service_logout.logout_dependency), 
-#                           Depends(allowd_operation),
-#                           Depends(service_banned.banned_dependency)]
- 
-#           )
-# async def get_all_usernames(current_user: User = Depends(service_auth.get_current_user),
-#                             db: Session = Depends(get_db)):
-#     """
-#     The get_all_usernames function returns a list of all usernames in the database.
-    
-#     :param current_user: User: Get the current user from the database
-#     :param db: Session: Get the database session from the dependency injection
-#     :return: A list of all the usernames in the database
-#     """
-#     usernames = await repository_users.return_all_users(db)
-#     return usernames
-
-
-@router.get('/me', response_model=UserResponce,
+@router.get('/me', response_model=UserResponse,
             status_code=status.HTTP_200_OK,
             dependencies=[Depends(service_logout.logout_dependency), 
                           Depends(allowd_operation),

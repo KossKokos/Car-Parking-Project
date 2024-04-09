@@ -65,6 +65,7 @@ async def update_banned_status(user: User, db: Session):
     db.refresh(user)
     return user
 
+
 async def update_unbanned_status(user: User, db: Session):
     """
     The update_гтbanned_status function updates the banned status of a user for unbanned.
