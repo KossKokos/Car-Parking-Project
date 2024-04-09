@@ -11,8 +11,6 @@ from ..schemas.cars import CarResponse
 from ..services import (
     roles as service_roles,
     logout as service_logout,
-    banned as service_banned,
-    cloudinary as service_cloudinary
 )
 
 
@@ -219,7 +217,7 @@ async def ban_car(license_plate:str,
         raise HTTPException(status_code=404, detail="Car not found")
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user and user.id != 1:
-        await repository_users.ban_user(user, db)
+        await repository_admin.update_banned_status(user, db)
     await repository_cars.update_car_banned_status(car, db)
     if user:
         car_banned_response = {
@@ -259,15 +257,15 @@ async def unban_car(license_plate:str,
         raise HTTPException(status_code=404, detail="Car not found")
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user and user.id != 1:
-        await repository_users.update_unbanned_status(user, db)
+        await repository_admin.update_unbanned_status(user, db)
     await repository_cars.update_car_unbanned_status(car, db)
     if user:
         car_banned_response = {
                         "car id": car.id,
                         "license plate":car.license_plate,
                         "car ban status": car.banned,
-                        "banned user id":user.id,
-                        "banned user email":user.email,
+                        "unbanned user id":user.id,
+                        "unbanned user email":user.email,
                         "user ban status": user.banned,
                         }
     else:
@@ -275,8 +273,8 @@ async def unban_car(license_plate:str,
                         "car id": car.id,
                         "license plate":car.license_plate,
                         "car ban status": car.banned,
-                        "banned user id": "not registrated user",
-                        "banned user email": "N/A",
+                        "unbanned user id": "not registrated user",
+                        "unbanned user email": "N/A",
                         "user ban status": "N/A",
                         }
 

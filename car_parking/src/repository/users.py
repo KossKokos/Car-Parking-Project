@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 
-#from src.database.models import User, Image
 from ..database.models import User
-from ..schemas.users import UserModel, UserRoleUpdate
+from ..schemas.users import UserModel
 
 
 async def create_user(body: UserModel, db: Session) -> User:
@@ -98,26 +97,6 @@ async def change_password(user: User, new_password: str, db: Session) -> None:
     db.commit()
     db.refresh(user)
 
-# not used
-# async def update_avatar(email, url: str, db: Session) -> User:
-#     """
-#     The update_avatar function updates the avatar of a user.
-    
-#     Args:
-#         email (str): The email address of the user to update.
-#         url (str): The URL for the new avatar image.
-#         db (Session, optional): A database session object.
-    
-#     :param email: Find the user in the database
-#     :param url: str: The URL for the new avatar image
-#     :param db: Session: Pass the database session to the function
-#     :return: A user object
-#     """
-#     user = await get_user_by_email(email, db)
-#     user.avatar = url
-#     db.commit()
-#     db.refresh(user)
-#     return user
 
 async def get_user_by_id(user_id: int, db: Session) -> User | None:
     """
@@ -148,35 +127,9 @@ async def delete_user(user_id: int, db: Session) -> None:
         db.commit()
     return None 
 
-# not used
-# async def get_imagis_quantity(user:User, db: Session):
-#     """
-#     The get_imagis_quantity function returns the number of images that a user has uploaded to the database.
-#         Args:
-#             user (User): The User object whose image quantity is being requested.
-#             db (Session): The database session used for querying and updating data in the database.
-    
-#     :param user:User: Get the user_id of the user
-#     :param db: Session: Connect to the database and query it
-#     :return: The quantity of images that a user has uploaded to the database
-#     """
-#     all_images = db.query(Image).filter_by(user_id = user.id).all()
-#     quantity_of_loaded_images = len(all_images)
-#     return quantity_of_loaded_images
 
 async def get_user_by_car_license_plate(license_plate: str, db: Session) -> User | None:
     return db.query(User).filter(User.license_plate==license_plate).first()
-
-async def ban_user(user: User, db: Session) -> None:
-    """
-    The confirmed_email function sets the confirmed field of a user to True.
-    
-    :param email: str: Get the email address of the user
-    :param db: Session: Pass the database session to the function
-    :return: None
-    """
-    user.banned = True
-    db.commit()
 
 
 
