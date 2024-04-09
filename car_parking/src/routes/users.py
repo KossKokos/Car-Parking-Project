@@ -6,13 +6,13 @@ from ..database.db import get_db
 from ..database.models import User
 from ..repository import users as repository_users
 from ..services.auth import service_auth
-from ..schemas.users import UserResponse
+from ..schemas.users import UserResponce, UserParkingResponse
+from ..schemas.parking import ParkingInfo
 from ..services import (
     roles as service_roles,
     logout as service_logout,
     banned as service_banned,
 )
-
 
 router = APIRouter(prefix='/users', tags=['users'])
 security = HTTPBearer()
@@ -20,36 +20,26 @@ security = HTTPBearer()
 allowd_operation = service_roles.RoleRights(["user", "moderator", "admin"])
 allowd_operation_by_admin = service_roles.RoleRights(["admin"])
 
-@router.get('/me', response_model=UserResponse,
+
+@router.get('/me', response_model=UserParkingResponse,z
             status_code=status.HTTP_200_OK,
-            dependencies=[Depends(service_logout.logout_dependency), 
+            dependencies=[Depends(service_logout.logout_dependency),
                           Depends(allowd_operation),
                           Depends(service_banned.banned_dependency)]
             )
-async def read_users_me(current_user: User = Depends(service_auth.get_current_user)):
-    """
-    The read_users_me function returns the current user's information.
+async def read_users_me(current_user: User = Depends(service_auth.get_current_user), db: Session = Depends(get_db)):
 
-        get:
-          summary: Returns the current user's information.
-          description: Returns the current user's information based on their JWT token in their request header.
-          responses: HTTP status code 200 indicates success! In this case, it means we successfully returned a User
-    
-    :param current_user: User: Get the user object of the current user
-    :return: The user object
-    """
-    return current_user
+    user = await repository_users.get_user_me(current_user, db)
+    return user
 
 
-@router.get('/{username}', 
+@router.get('/profile', response_model=ParkingInfo,
             status_code=status.HTTP_200_OK,
-            dependencies=[Depends(service_logout.logout_dependency), 
+            dependencies=[Depends(service_logout.logout_dependency),
                           Depends(allowd_operation),
                           Depends(service_banned.banned_dependency)],
-            description = "Any User")
-async def get_user_profile(username, 
-                           current_user: User = Depends(service_auth.get_current_user),
-                           db: Session = Depends(get_db)):
+            description="Any User")
+async def get_user_profile(current_user: User = Depends(service_auth.get_current_user), db: Session = Depends(get_db)):
     """
     The get_user_profile function returns a user profile by username.
         Args:
@@ -60,23 +50,6 @@ async def get_user_profile(username,
     :param db: Session: Get the database connection
     :return: A dictionary
     """
-    
-    user = await repository_users.get_user_by_username(username, db)
-
-    if not user:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f'User with username: {username} not found.')
-    
-    # quantity_of_loaded_images: int = await repository_users.get_imagis_quantity(user, db)
-
-    user_profile = {
-                    "user id": user.id,
-                    "username":user.username,
-                    "email": user.email,
-                    "registrated at":user.created_at,
-                    "banned": user.banned,
-                    "user role":user.role,
-                    "license_plates": license_plate, # type: ignore
-                    }
+    user_profile = await repository_users.get_parking_info(current_user, db)
 
     return user_profile
-

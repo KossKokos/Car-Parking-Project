@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from ..database.db import get_db
 from ..database.models import User
 from ..repository import users as repository_users
+from ..repository import car as repository_car
 from ..repository.logout import token_to_blacklist
 from ..services.auth import service_auth
 from ..services import (
@@ -54,6 +55,7 @@ async def signup(body: schema_users.UserModel,
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail= f'User with name: {body.username} already exists')
     
     body.password = service_auth.get_password_hash(body.password)
+    car = await repository_car.create_car(body.license_plate, db)
     user = await repository_users.create_user(body, db)
     background_tasks.add_task(service_email.send_email, user.email, user.username, request.base_url)
     return {'user': user, 'detail': 'User successfully created, please check your email for verification'}
