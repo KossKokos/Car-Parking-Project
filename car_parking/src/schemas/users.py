@@ -9,6 +9,7 @@ class UserModel(BaseModel):
     password: str = Field(min_length=8, max_length=15, default='password')
     license_plate: str
 
+      
 class UserResponce(BaseModel):
     username: str = 'username'
     email: EmailStr = 'example@gmail.com'
@@ -19,11 +20,8 @@ class UserParkingResponse(BaseModel):
     user: UserResponce
     parking: CurrentParking | str
 
-
     class Config:
         orm_mode = True
-
-
 
 
 

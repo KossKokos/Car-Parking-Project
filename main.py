@@ -5,7 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text 
 
-from car_parking.src.routes import auth, users, parking
+from car_parking.src.routes import auth, users, parking, admin
 from car_parking.src.database.db import get_db
 
 app = FastAPI(debug=True)
@@ -14,7 +14,7 @@ app = FastAPI(debug=True)
 app.include_router(auth.router, prefix='/api')
 app.include_router(users.router, prefix='/api')
 app.include_router(parking.router, prefix='/api')
-# app.include_router(images.router, prefix='/api')
+app.include_router(admin.router, prefix='/api')
 # app.include_router(rating.router, prefix='/api')
 # app.include_router(comments.router, prefix='/api')
 
