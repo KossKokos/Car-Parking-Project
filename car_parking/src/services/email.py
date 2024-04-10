@@ -77,3 +77,19 @@ async def send_reset_password_email(email: EmailStr, username: str, host: str) -
         await fm.send_message(message, template_name="reset_password.html")
     except ConnectionErrors as err:
         print(err)
+
+async def praking_enter_message(email: EmailStr, username: str, host: str) -> None:
+
+    try:
+        token_verification = await service_auth.create_email_token({"sub": email})
+        message = MessageSchema(
+            subject="Parking place info",
+            recipients=[email],
+            template_body={"host": host, "username": username, "token": token_verification},
+            subtype=MessageType.html
+        )
+
+        fm = FastMail(conf)
+        await fm.send_message(message, template_name="raking_enter_message.html")
+    except ConnectionErrors as err:
+        print(err)
