@@ -1,8 +1,15 @@
 from sqlalchemy.orm import Session
 
 #from src.database.models import User, Image
-from ..database.models import User
+from ..database.models import User, Car
 from ..schemas.users import UserModel, UserRoleUpdate
+
+from typing import Type
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session, joinedload
+
+from typing import List, Optional
+from ..database import db
 
 
 async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
@@ -81,3 +88,36 @@ async def update_unbanned_status(user: User, db: Session):
     db.refresh(user)
     return user
 
+
+async def get_user_by_email(email: str, db: Session) -> Optional[User]:
+    return db.query(User).filter_by(email=email).first()
+
+
+async def admin_edit_user(user_id, new_data):  
+    user_info = await get_user_by_email(user_id, db) 
+    if user_info:
+        user = db.query(User).filter_by(id=user_id).first()
+        for key, value in new_data.items():
+            setattr(user, key, value)
+        try:
+            db.commit()
+            print("Інформація про користувача успішно оновлена.")
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
+    else:
+        print("Користувача з таким ID не знайдено.")
+        
+        
+async def get_all_users(db: Session) -> List[User]:
+    users = db.query(User).all()
+    return users
+
+
+async def get_cars_with_user_by_car_number(db: Session, car_number: str):
+    car = db.query(Car).filter(Car.number == car_number).first()
+    if car:
+        user = db.query(User).filter(User.car_id == car.id).first()
+        return car, user
+    else:
+        return None, None
