@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session
 from ..database.models import User
 from ..database import db
 
+from sqlalchemy.orm import Session
+from ..database.models import Car, User
+
 import sys
 from pathlib import Path
 path = str(Path(__file__).parent.parent.parent)
@@ -32,5 +35,13 @@ class AdminService:
         
     def get_all_users(self, db: Session) -> List[User]:
         users = db.query(User).all()
-        return users
+        return 
+    
+    def get_cars_with_user_by_car_number(self, db: Session, car_number: str):
+        car = db.query(Car).filter(Car.number == car_number).first()
+        if car:
+            user = db.query(User).filter(User.car_id == car.id).first()
+            return car, user
+        else:
+            return None, None
 
