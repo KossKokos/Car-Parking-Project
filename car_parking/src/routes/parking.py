@@ -9,7 +9,7 @@ from ..repository import parking as repository_parking
 from ..repository.logout import token_to_blacklist
 from ..services.auth import service_auth
 from ..schemas.users import UserResponse, UserParkingResponse
-from ..schemas.parking import ParkingInfo, ParkingSchema
+from ..schemas.parking import ParkingInfo, ParkingSchema, ParkingResponse
 from ..services import (
     email as service_email,
     roles as service_roles,
@@ -38,39 +38,64 @@ allowd_operation_by_admin = service_roles.RoleRights(["admin"])
 #     parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
 #     return parking_place
 
+
+# # first working version
+# @router.post('/parking/{license_plate}',
+#              dependencies=[Depends(service_logout.logout_dependency), 
+#                            Depends(allowd_operation),
+#                            Depends(service_banned.banned_dependency)],
+
+#              #response_model =ParkingResponse,
+#              status_code=status.HTTP_200_OK,
+#              )
+# async def enter_parking(license_plate, 
+#                         current_user: User = Depends(service_auth.get_current_user),
+#                         db: Session = Depends(get_db),
+#                         background_tasks: BackgroundTasks = BackgroundTasks()):
+#     parking = await repository_parking.entry_to_the_parking(license_plate, db)
+#     background_tasks.add_task(service_email.praking_enter_message, 
+#                               current_user.email, 
+#                               current_user.username,
+#                               Request.base_url)
+#     return {'detail': 'Parking successfull, please check your email for details'}
+#     #return {'Parking place': parking, 'detail': 'Parking place successfully created, please check your email for details'}
+#     #return parking
+
+
+# # Second working version
 @router.post('/parking/{license_plate}',
              dependencies=[Depends(service_logout.logout_dependency), 
                            Depends(allowd_operation),
                            Depends(service_banned.banned_dependency)],
-             response_model=ParkingSchema,
+
+             #response_model =ParkingResponse,
              status_code=status.HTTP_200_OK,
              )
 async def enter_parking(license_plate, 
                         current_user: User = Depends(service_auth.get_current_user),
-                        db: Session = Depends(get_db)):
+                        db: Session = Depends(get_db),
+                        background_tasks: BackgroundTasks = BackgroundTasks()):
+    """
+    The enter_parking function is used to enter the parking.
+        It takes a license plate as an argument and returns the parking place where it was parked.
+    
+    
+    :param license_plate: Identify the car that is entering the parking
+    :param current_user: User: Get the current user from the database
+    :param db: Session: Get the database session
+    :param background_tasks: BackgroundTasks: Pass a backgroundtasks object to the function
+    :return: A parkingplace object, which contains a licenseplate object
+    :doc-author: Trelent
+    """
     parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
+    #print (parking_place.info.enter_time)
+    enter_time = parking_place.info.enter_time.strftime("%Y-%m-%d %H:%M:%S")
+    background_tasks.add_task(service_email.praking_enter_message, 
+                              current_user.email, 
+                              current_user.username, enter_time,
+                              Request.base_url)
     return parking_place
 
-
-# @router.post('/parking/{license_plate}',
-#             # dependencies=[
-#             #             Depends(service_logout), 
-#             #             Depends(allowd_operation),
-#             #             #Depends(service_banned)
-#             #             ],
-#              response_model=ParkingSchema,
-#              status_code=status.HTTP_200_OK,
-#              )
-# async def enter_parking(license_plate,
-#                         credentials: HTTPAuthorizationCredentials = Security(security),
-#                         current_user: User = Depends(service_auth.get_current_user),
-#                         db: Session = Depends(get_db),
-#                         background_tasks: BackgroundTasks = BackgroundTasks()):
-#     #parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
-#     #return parking_place
-#     background_tasks.add_task(service_email.praking_enter_message, current_user.email, current_user.username, Request.base_url)
-#     #return {'Parking place': parking_place, 'detail': 'Parking place successfully created, please check your email for details'}
-#     return {'detail': 'Parking place successfully created, please check your email for details'}
 
 # original code
 # @router.post('/exit_parking/{license_plate}',
@@ -90,6 +115,7 @@ async def enter_parking(license_plate,
              )
 async def exit_parking(license_plate, 
                        current_user: User = Depends(service_auth.get_current_user),
-                       db: Session = Depends(get_db)):
+                       db: Session = Depends(get_db),
+                       background_tasks: BackgroundTasks = BackgroundTasks()):
     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
     return parking_info
