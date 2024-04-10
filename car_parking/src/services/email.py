@@ -78,14 +78,19 @@ async def send_reset_password_email(email: EmailStr, username: str, host: str) -
     except ConnectionErrors as err:
         print(err)
 
-async def praking_enter_message(email: EmailStr, username: str, enter_time, host: str) -> None:
+async def praking_enter_message(email: EmailStr, username: str, enter_time, tariff_name, tariff_value, host: str) -> None:
 
     try:
         token_verification = await service_auth.create_email_token({"sub": email})
         message = MessageSchema(
             subject="Parking place info",
             recipients=[email],
-            template_body={"host": host, "username": username, "enter_time" :enter_time, "token": token_verification},
+            template_body={"host": host, 
+                           "username": username, 
+                           "enter_time" :enter_time, 
+                           "tariff_name": tariff_name,
+                           "tariff_value": tariff_value, 
+                           "token": token_verification},
             subtype=MessageType.html
         )
 

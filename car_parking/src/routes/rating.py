@@ -9,7 +9,7 @@ from ..services.roles import RoleRights
 from ..services.logout import logout_dependency
 from ..services.banned import banned_dependency
 from ..schemas import rating as schema_rating
-from ..repository import rating as repository_rating
+from ..repository import tariff as repository_rating
 
 router = APIRouter(prefix='/images/rating', tags=['rating'])
 
