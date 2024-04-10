@@ -17,9 +17,11 @@ class User(Base):
     confirmed = Column(Boolean, default=False)# email confirmed
     banned = Column(Boolean, default=False)
     role = Column(String(20), nullable=False, default='user')
-    license_plate = Column('license_plate', ForeignKey('cars_table.license_plate', ondelete='CASCADE'), unique=True)
+    license_plate = Column('license_plate', ForeignKey('cars_table.license_plate'), unique=True)
+    tariff_id = Column('tariff_id', ForeignKey('tariffs_table.id'))
     blacklisted_token = relationship('BlacklistedToken', uselist=False, back_populates='user')
     cars = relationship('Car', uselist=True, back_populates='user')
+    tariff = relationship('Tariff', back_populates='user')
 
     __table_args__ = (
         CheckConstraint(
@@ -38,7 +40,7 @@ class Parking(Base):
     id = Column(Integer, primary_key=True)
     enter_time = Column(DateTime(timezone=True), server_default=func.now())
     departure_time = Column(DateTime(timezone=True))
-    status = Column(Boolean, default=False) #Free -false / true - occupated
+    status = Column(Boolean, default=False) #false - parking place created and car on the parking / true - car left and parking place closed
     license_plate = Column('license_plate', ForeignKey('cars_table.license_plate', ondelete='CASCADE'))
     amount_paid = Column(Numeric)
     duration = Column(Numeric)
@@ -60,7 +62,15 @@ class Car(Base):
     banned = Column(Boolean, default=False)
     user = relationship('User', uselist=False, back_populates='cars')
     parking_place = relationship("Parking", uselist=False,  back_populates="car")
-    
+
+class Tariff(Base):
+    __tablename__ = 'tariffs_table'
+
+    id = Column(Integer, primary_key=True)
+    tariff_name = Column(String(30), nullable=False, unique=True)
+    tariff_value = Column(Numeric, default=0)
+    user = relationship('User', back_populates='tariff')
+
 
 class BlacklistedToken(Base):
     __tablename__ = 'blacklisted_tokens'
