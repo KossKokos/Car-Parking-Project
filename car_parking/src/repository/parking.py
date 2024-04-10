@@ -60,7 +60,8 @@ async def entry_to_the_parking(license_plate: str, db: Session):
                                                      amount_paid=parking_place.amount_paid,
                                                      duration=parking_place.duration,
                                                      status=False),
-                                status="You can park.")
+                                #status="You can park."
+                                status = "Parking successfull, please check your email for details")
         return parking
     parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
                                                  departure_time=parking_place.departure_time,

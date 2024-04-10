@@ -16,8 +16,8 @@ from ..services import (
 )
 from ..repository import (
     images as repository_images, 
-    rating as repository_rating, 
-    tags as repository_tags
+    tags as repository_tags,
+    tariff as repository_rating
 )
 
 router = APIRouter(prefix='/images', tags=['images'])
