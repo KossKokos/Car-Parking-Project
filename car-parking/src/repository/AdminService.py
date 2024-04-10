@@ -3,11 +3,8 @@ from typing import List, Optional
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from ..database.models import User
-from ..database import db
-
-from sqlalchemy.orm import Session
 from ..database.models import Car, User
+from ..database import db
 
 import sys
 from pathlib import Path
