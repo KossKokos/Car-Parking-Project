@@ -1,3 +1,5 @@
+from typing import List
+
 import pytz
 from sqlalchemy.orm import Session
 
@@ -32,7 +34,7 @@ async def create_user(body: UserModel, db: Session) -> User:
     :return: A user object
     """
     user = User(**body.dict())
-    print (body)
+    print(body)
     user.license_plate = body.license_plate.upper()
     user.tariff_id = 2
     db.add(user)
@@ -151,12 +153,29 @@ async def delete_user(user_id: int, db: Session) -> None:
 
   
 async def get_user_by_car_license_plate(license_plate: str, db: Session) -> User | None:
-    return db.query(User).filter(User.license_plate==license_plate).first()
+    license_plate = license_plate.upper()
+    return db.query(User).filter_by(license_plate=license_plate).first()
+
+
+async def calculate_amount_cost(list_of_parking: list[[Parking]]):
+    total_cost = 0
+    for park in list_of_parking:
+        total_cost += park.amount_paid
+    return total_cost
+
+
+async def calculate_amount_duration(list_of_parking: list[[Parking]]):
+    total_duration = 0
+    for park in list_of_parking:
+        total_duration += park.duration
+    return total_duration
 
 
 async def get_parking_info(user: User, db: Session):
     parking_info = db.query(Parking).filter(Parking.license_plate == user.license_plate, Parking.status == True).all()
-    parking_history = ParkingInfo(user=user.username, parking_info=[])
+    total_payment_amount = await calculate_amount_cost(parking_info)
+    total_parking_time = await calculate_amount_duration(parking_info)
+    parking_history = ParkingInfo(user=user.username, total_payment_amount=total_payment_amount, total_parking_time=total_parking_time, parking_info=[])
     for parking in parking_info:
         parking_history.parking_info.append(ParkingResponse(enter_time=parking.enter_time,
                                                             departure_time=parking.departure_time,

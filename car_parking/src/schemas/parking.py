@@ -14,6 +14,8 @@ class ParkingResponse(BaseModel):
 
 class ParkingInfo(BaseModel):
     user: str
+    total_payment_amount: float
+    total_parking_time: float
     parking_info: List[ParkingResponse] | None
 
 

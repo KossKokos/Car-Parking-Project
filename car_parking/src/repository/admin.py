@@ -39,6 +39,7 @@ async def delete_user(user_id: int, db: Session) -> None:
         db.commit()
     return None 
 
+
 async def return_all_users(db: Session) -> dict:
     """
     The return_all_users function retrieves all usernames from the User table.
@@ -49,6 +50,7 @@ async def return_all_users(db: Session) -> dict:
     users = db.query(User).all()
     usernames = {f"username(id: {user.id})": user.username for user in users}
     return usernames
+
 
 async def update_banned_status(user: User, db: Session):
     """
@@ -81,3 +83,5 @@ async def update_unbanned_status(user: User, db: Session):
     db.refresh(user)
     return user
 
+
+# async def add_tariff(tariff_name: str, tariff_cost: int, db: Session)
