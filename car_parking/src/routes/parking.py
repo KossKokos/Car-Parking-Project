@@ -157,16 +157,28 @@ async def enter_parking(license_plate,
 
 #exit code second version
 @router.post('/exit_parking/{license_plate}',
-            #  dependencies=[Depends(service_logout.logout_dependency), 
-            #                Depends(allowd_operation),
-            #                Depends(service_banned.banned_dependency)],
              response_model=ParkingSchema | str,
              status_code=status.HTTP_200_OK,
              )
 async def exit_parking(license_plate, 
-                       #current_user: User = Depends(service_auth.get_current_user),
                        db: Session = Depends(get_db),
                        background_tasks: BackgroundTasks = BackgroundTasks()):
     license_plate = license_plate.upper()
     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
+    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
+    if user:
+        enter_time = parking_info.info.enter_time.strftime("%Y-%m-%d %H:%M:%S")
+        departure_time = parking_info.info.departure_time.strftime("%Y-%m-%d %H:%M:%S")
+        tariff = await repository_tariff.get_tariff_by_tariff_id(user.tariff_id, db)                                  
+        background_tasks.add_task(service_email.praking_exit_message,
+                            user.email, 
+                            user.username,
+                            user.license_plate,
+                            enter_time,
+                            departure_time,
+                            tariff.tariff_name,
+                            tariff.tariff_value,
+                            parking_info.info.duration,
+                            parking_info.info.amount_paid,
+                            Request.base_url)
     return parking_info

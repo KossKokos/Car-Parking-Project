@@ -126,27 +126,76 @@ async def entry_to_the_parking(license_plate: str, db: Session):
         return parking
 
 
+# original code
+# async def exit_from_the_parking(license_plate: str, db: Session):
+#     parking_place = (
+#         db.query(Parking)
+#         .filter(Parking.license_plate == license_plate, Parking.status == False)
+#         .first()
+#     )
+#     if parking_place:
+#         parking_place = await change_parking_status(parking_place.id, db)
+#         parking = ParkingSchema(
+#             info=ParkingResponse(
+#                 enter_time=parking_place.enter_time,
+#                 departure_time=parking_place.departure_time,
+#                 license_plate=parking_place.license_plate,
+#                 amount_paid=parking_place.amount_paid,
+#                 duration=parking_place.duration,
+#                 status=False,
+#             ),
+#             status="You can go.",
+#         )
+#         return parking
+#     return "This car not in parking"
+
+
 async def exit_from_the_parking(license_plate: str, db: Session):
-    parking_place = (
-        db.query(Parking)
-        .filter(Parking.license_plate == license_plate, Parking.status == False)
-        .first()
-    )
-    if parking_place:
-        parking_place = await change_parking_status(parking_place.id, db)
-        parking = ParkingSchema(
-            info=ParkingResponse(
-                enter_time=parking_place.enter_time,
-                departure_time=parking_place.departure_time,
-                license_plate=parking_place.license_plate,
-                amount_paid=parking_place.amount_paid,
-                duration=parking_place.duration,
-                status=False,
-            ),
-            status="You can go.",
+    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
+    if user:
+        parking_place = (
+            db.query(Parking)
+            .filter(Parking.license_plate == license_plate, Parking.status == False)
+            .first()
         )
-        return parking
-    return "This car not in parking"
+        if parking_place:
+            parking_place = await change_parking_status(parking_place.id, db)
+            parking = ParkingSchema(
+                info=ParkingResponse(
+                    enter_time=parking_place.enter_time,
+                    departure_time=parking_place.departure_time,
+                    license_plate=parking_place.license_plate,
+                    amount_paid=parking_place.amount_paid,
+                    duration=parking_place.duration,
+                    status=False,
+                ),
+                status="You can go.",
+            )
+            return parking
+        return "This car not in parking"
+    
+    else:
+        parking_place = (
+            db.query(Parking)
+            .filter(Parking.license_plate == license_plate, Parking.status == False)
+            .first()
+        )
+        if parking_place:
+            parking_place = await change_parking_status(parking_place.id, db)
+            parking = ParkingSchema(
+                info=ParkingResponse(
+                    enter_time=parking_place.enter_time,
+                    departure_time=parking_place.departure_time,
+                    license_plate=parking_place.license_plate,
+                    amount_paid=parking_place.amount_paid,
+                    duration=parking_place.duration,
+                    status=False,
+                ),
+                status="You can go.",
+            )
+            return parking
+        return "This car not in parking"
+
 
 async def seed_parking_count(db:Session):
         # Check if the Tariff table is empty
