@@ -1,0 +1,230 @@
+Index: car_parking/.idea/inspectionProfiles/Project_Default.xml
+===================================================================
+diff --git a/car_parking/.idea/inspectionProfiles/Project_Default.xml b/car_parking/.idea/inspectionProfiles/Project_Default.xml
+new file mode 100644
+--- /dev/null	
++++ b/car_parking/.idea/inspectionProfiles/Project_Default.xml	
+@@ -0,0 +1,73 @@
++<component name="InspectionProjectProfileManager">
++  <profile version="1.0">
++    <option name="myName" value="Project Default" />
++    <inspection_tool class="HtmlUnknownAttribute" enabled="true" level="WARNING" enabled_by_default="true">
++      <option name="myValues">
++        <value>
++          <list size="4">
++            <item index="0" class="java.lang.String" itemvalue="message.tags" />
++            <item index="1" class="java.lang.String" itemvalue="%}" />
++            <item index="2" class="java.lang.String" itemvalue="{%" />
++            <item index="3" class="java.lang.String" itemvalue="endif" />
++          </list>
++        </value>
++      </option>
++      <option name="myCustomValuesEnabled" value="true" />
++    </inspection_tool>
++    <inspection_tool class="HtmlUnknownTag" enabled="true" level="WARNING" enabled_by_default="true">
++      <option name="myValues">
++        <value>
++          <list size="8">
++            <item index="0" class="java.lang.String" itemvalue="nobr" />
++            <item index="1" class="java.lang.String" itemvalue="noembed" />
++            <item index="2" class="java.lang.String" itemvalue="comment" />
++            <item index="3" class="java.lang.String" itemvalue="noscript" />
++            <item index="4" class="java.lang.String" itemvalue="embed" />
++            <item index="5" class="java.lang.String" itemvalue="script" />
++            <item index="6" class="java.lang.String" itemvalue="select" />
++            <item index="7" class="java.lang.String" itemvalue="label" />
++          </list>
++        </value>
++      </option>
++      <option name="myCustomValuesEnabled" value="true" />
++    </inspection_tool>
++    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
++      <option name="ignoredPackages">
++        <value>
++          <list size="15">
++            <item index="0" class="java.lang.String" itemvalue="spacy" />
++            <item index="1" class="java.lang.String" itemvalue="zipp" />
++            <item index="2" class="java.lang.String" itemvalue="rich" />
++            <item index="3" class="java.lang.String" itemvalue="Levenshtein" />
++            <item index="4" class="java.lang.String" itemvalue="alembic" />
++            <item index="5" class="java.lang.String" itemvalue="greenlet" />
++            <item index="6" class="java.lang.String" itemvalue="six" />
++            <item index="7" class="java.lang.String" itemvalue="aiosqlite" />
++            <item index="8" class="java.lang.String" itemvalue="faker" />
++            <item index="9" class="java.lang.String" itemvalue="python-dateutil" />
++            <item index="10" class="java.lang.String" itemvalue="psycopg2" />
++            <item index="11" class="java.lang.String" itemvalue="typing-extensions" />
++            <item index="12" class="java.lang.String" itemvalue="mako" />
++            <item index="13" class="java.lang.String" itemvalue="markupsafe" />
++            <item index="14" class="java.lang.String" itemvalue="sqlalchemy" />
++          </list>
++        </value>
++      </option>
++    </inspection_tool>
++    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
++      <option name="ignoredErrors">
++        <list>
++          <option value="N801" />
++        </list>
++      </option>
++    </inspection_tool>
++    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
++      <option name="ignoredIdentifiers">
++        <list>
++          <option value="redis.client.Redis.__await__" />
++          <option value="config.pydantic_settings" />
++        </list>
++      </option>
++    </inspection_tool>
++  </profile>
++</component>
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+new file mode 100644
+--- /dev/null	
++++ b/.idea/workspace.xml	
+@@ -0,0 +1,64 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="AutoImportSettings">
++    <option name="autoReloadType" value="SELECTIVE" />
++  </component>
++  <component name="ChangeListManager">
++    <list default="true" id="c63afbc2-8a8d-47fc-8208-f6162def403e" name="Changes" comment="" />
++    <option name="SHOW_DIALOG" value="false" />
++    <option name="HIGHLIGHT_CONFLICTS" value="true" />
++    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
++    <option name="LAST_RESOLUTION" value="IGNORE" />
++  </component>
++  <component name="FileTemplateManagerImpl">
++    <option name="RECENT_TEMPLATES">
++      <list>
++        <option value="Python Script" />
++      </list>
++    </option>
++  </component>
++  <component name="Git.Settings">
++    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
++  </component>
++  <component name="MarkdownSettingsMigration">
++    <option name="stateVersion" value="1" />
++  </component>
++  <component name="ProjectColorInfo">{
++  &quot;customColor&quot;: &quot;&quot;,
++  &quot;associatedIndex&quot;: 1
++}</component>
++  <component name="ProjectId" id="2eocKcERgb2PTQZpj7Pga5VrcoO" />
++  <component name="ProjectViewState">
++    <option name="hideEmptyMiddlePackages" value="true" />
++    <option name="showLibraryContents" value="true" />
++  </component>
++  <component name="PropertiesComponent"><![CDATA[{
++  "keyToString": {
++    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
++    "RunOnceActivity.OpenProjectViewOnStart": "true",
++    "RunOnceActivity.ShowReadmeOnStart": "true",
++    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
++    "dart.analysis.tool.window.visible": "false",
++    "git-widget-placeholder": "user__repo",
++    "ignore.virus.scanning.warn.message": "true",
++    "last_opened_file_path": "C:/Users/PC/PycharmProjects/Car-Parking-Project",
++    "settings.editor.selected.configurable": "com.jetbrains.python.black.configuration.BlackFormatterConfigurable"
++  }
++}]]></component>
++  <component name="RecentsManager">
++    <key name="MoveFile.RECENT_KEYS">
++      <recent name="C:\Users\PC\PycharmProjects\Car-Parking-Project\car_parking\src\schemas" />
++    </key>
++  </component>
++  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
++  <component name="TaskManager">
++    <task active="true" id="Default" summary="Default task">
++      <changelist id="c63afbc2-8a8d-47fc-8208-f6162def403e" name="Changes" comment="" />
++      <created>1712574308263</created>
++      <option name="number" value="Default" />
++      <option name="presentableId" value="Default" />
++      <updated>1712574308263</updated>
++    </task>
++    <servers />
++  </component>
++</project>
+\ No newline at end of file
+Index: car_parking/.idea/vcs.xml
+===================================================================
+diff --git a/car_parking/.idea/vcs.xml b/car_parking/.idea/vcs.xml
+new file mode 100644
+--- /dev/null	
++++ b/car_parking/.idea/vcs.xml	
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings">
++    <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
++  </component>
++</project>
+\ No newline at end of file
+Index: car_parking/.idea/inspectionProfiles/profiles_settings.xml
+===================================================================
+diff --git a/car_parking/.idea/inspectionProfiles/profiles_settings.xml b/car_parking/.idea/inspectionProfiles/profiles_settings.xml
+new file mode 100644
+--- /dev/null	
++++ b/car_parking/.idea/inspectionProfiles/profiles_settings.xml	
+@@ -0,0 +1,6 @@
++<component name="InspectionProjectProfileManager">
++  <settings>
++    <option name="USE_PROJECT_PROFILE" value="false" />
++    <version value="1.0" />
++  </settings>
++</component>
+\ No newline at end of file
+Index: car_parking/.idea/.gitignore
+===================================================================
+diff --git a/car_parking/.idea/.gitignore b/car_parking/.idea/.gitignore
+new file mode 100644
+--- /dev/null	
++++ b/car_parking/.idea/.gitignore	
+@@ -0,0 +1,3 @@
++# Default ignored files
++/shelf/
++/workspace.xml
+Index: car_parking/.idea/car_parking.iml
+===================================================================
+diff --git a/car_parking/.idea/car_parking.iml b/car_parking/.idea/car_parking.iml
+new file mode 100644
+--- /dev/null	
++++ b/car_parking/.idea/car_parking.iml	
+@@ -0,0 +1,12 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<module type="PYTHON_MODULE" version="4">
++  <component name="NewModuleRootManager">
++    <content url="file://$MODULE_DIR$" />
++    <orderEntry type="inheritedJdk" />
++    <orderEntry type="sourceFolder" forTests="false" />
++  </component>
++  <component name="PyDocumentationSettings">
++    <option name="format" value="GOOGLE" />
++    <option name="myDocStringFormat" value="Google" />
++  </component>
++</module>
+\ No newline at end of file
+Index: car_parking/.idea/modules.xml
+===================================================================
+diff --git a/car_parking/.idea/modules.xml b/car_parking/.idea/modules.xml
+new file mode 100644
+--- /dev/null	
++++ b/car_parking/.idea/modules.xml	
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="ProjectModuleManager">
++    <modules>
++      <module fileurl="file://$PROJECT_DIR$/.idea/car_parking.iml" filepath="$PROJECT_DIR$/.idea/car_parking.iml" />
++    </modules>
++  </component>
++</project>
+\ No newline at end of file

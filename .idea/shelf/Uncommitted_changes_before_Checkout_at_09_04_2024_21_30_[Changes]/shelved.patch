@@ -1,0 +1,23 @@
+Index: car_parking/src/repository/cars.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from sqlalchemy.orm import Session\r\n\r\nfrom ..database.models import Car\r\nfrom ..schemas.users import UserModel, UserRoleUpdate\r\n\r\n\r\n\r\nasync def get_car_by_license_plate(license_plate: str, db: Session) -> Car | None:\r\n\r\n    return db.query(Car).filter(Car.license_plate==license_plate).first()\r\n\r\nasync def update_car_banned_status(car: Car, db: Session):\r\n    \r\n    car.banned = True\r\n    db.commit()\r\n    db.refresh(car)\r\n    return car\r\n\r\nasync def update_car_unbanned_status(car: Car, db: Session):\r\n\r\n    car.banned = False\r\n    db.commit()\r\n    db.refresh(car)\r\n    return car
+===================================================================
+diff --git a/car_parking/src/repository/cars.py b/car_parking/src/repository/cars.py
+--- a/car_parking/src/repository/cars.py	
++++ b/car_parking/src/repository/cars.py	
+@@ -21,4 +21,12 @@
+     car.banned = False
+     db.commit()
+     db.refresh(car)
+-    return car
+\ No newline at end of file
++    return car
++
++
++async def create_car(license_plate, db: Session) -> Car:
++    car = Car(license_plate=license_plate)
++    db.add(car)
++    db.commit()
++    return car
++

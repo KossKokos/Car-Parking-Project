@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from ..schemas.parking import CurrentParking
 from pydantic import BaseModel, Field, EmailStr
@@ -33,3 +34,13 @@ class ChangePassword(BaseModel):
 class UserRoleUpdate(BaseModel):
     role: str = "role"
 
+
+class UserByCarResponse(BaseModel):
+    id: int
+    username: str = 'username'
+    email: EmailStr = 'example@gmail.com'
+    created_at: datetime
+    confirmed: bool
+    license_plate: str
+    banned: bool
+    tariff: int

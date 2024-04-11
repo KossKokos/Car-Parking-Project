@@ -43,6 +43,16 @@ async def signup(body: schema_users.UserModel,
     
     if exist_user_with_username:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail= f'User with name: {body.username} already exists')
+
+    exist_user_with_license: User = await repository_users.get_user_by_car_license_plate(
+        body.license_plate, db
+    )
+
+    if exist_user_with_license:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"User with license plate: {body.license_plate} already exists",
+        )
     
     body.password = service_auth.get_password_hash(body.password)
     car = await repository_car.get_car_by_license_plate(body.license_plate.upper(), db)

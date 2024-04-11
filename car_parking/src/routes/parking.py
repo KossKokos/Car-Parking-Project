@@ -103,7 +103,7 @@ allowd_operation_by_admin = service_roles.RoleRights(["admin"])
                            #Depends(allowd_operation),
                            #Depends(service_banned.banned_dependency)],
 
-             response_model=ParkingSchema,
+             response_model=ParkingSchema | str,
              status_code=status.HTTP_200_OK,
              )
 
@@ -170,3 +170,15 @@ async def exit_parking(license_plate,
     license_plate = license_plate.upper()
     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
     return parking_info
+
+
+@router.get('/free_place/{date}',
+            #  dependencies=[Depends(service_logout.logout_dependency),
+            #                Depends(allowd_operation),
+            #                Depends(service_banned.banned_dependency)],
+            #  response_model=ParkingSchema | str,
+             status_code=status.HTTP_200_OK,
+             )
+async def occupied_places(date: str, db: Session = Depends(get_db)):
+    occupied = await repository_parking.free_parking_places(date, db)
+    return occupied
