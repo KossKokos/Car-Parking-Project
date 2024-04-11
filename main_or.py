@@ -1,7 +1,10 @@
 import uvicorn
+
 from fastapi import FastAPI, Depends, HTTPException, status
+
 from sqlalchemy.orm import Session
-from sqlalchemy import text
+from sqlalchemy import text 
+
 from car_parking.src.routes import auth, users, parking, admin
 from car_parking.src.database.db import get_db
 from car_parking.src.repository import tariff as repository_tariff
@@ -52,16 +55,6 @@ def healthchecker(db: Session = Depends(get_db)):
                             detail="Error connecting to the database")
 
 
-async def main():
-    # Establish database connection
-    db = next(get_db())
-    # Seed tariff table if empty
-    await repository_tariff.seed_tariff_table(db)
-    # Close database connection
-    db.close()
-    # Start FastAPI server
-    uvicorn.run('main:app', host='127.0.0.1', port=8000, reload=True)
-
 if __name__ == '__main__':
-    import asyncio
-    asyncio.run(main())
+    #await repository_tariff.seed_tariff_table()
+    uvicorn.run('main:app', host='127.0.0.1', port=8000, reload=True)
