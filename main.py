@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from car_parking.src.routes import auth, users, parking, admin
 from car_parking.src.database.db import get_db
-from car_parking.src.repository import tariff as repository_tariff
+from car_parking.src.repository import tariff as repository_tariff, parking as repository_parking
 
 app = FastAPI(debug=True)
 
@@ -57,6 +57,7 @@ async def main():
     db = next(get_db())
     # Seed tariff table if empty
     await repository_tariff.seed_tariff_table(db)
+    await repository_parking.seed_parking_count(db)
     # Close database connection
     db.close()
     # Start FastAPI server

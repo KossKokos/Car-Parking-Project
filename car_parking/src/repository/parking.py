@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 # from src.database.models import User, Image
-from ..database.models import User, Parking, Car
+from ..database.models import User, Parking, Car, Parking_count
 from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponse
 from ..schemas.parking import CurrentParking, ParkingResponse, ParkingInfo, ParkingSchema
 from ..repository.car import create_car
@@ -147,3 +147,27 @@ async def exit_from_the_parking(license_plate: str, db: Session):
         )
         return parking
     return "This car not in parking"
+
+async def seed_parking_count(db:Session):
+        # Check if the Tariff table is empty
+    if db.query(Parking_count).count() == 0:
+        # Define data for three tariffs
+
+        tariffs_data = [
+            {"id": 1, "total_quantity": 30, "ococcupied_quantity": 0},
+        ]
+
+        # Add the tariffs to the database
+        for data in tariffs_data:
+            tariff = Parking_count(**data)
+            db.add(tariff)
+
+        # Commit the changes
+        db.commit()
+
+        print("Parking counts cvalues added successfully!")
+    else:
+        print("Parking_count table is not empty. Data not added.")
+
+    # Close the session
+    db.close()

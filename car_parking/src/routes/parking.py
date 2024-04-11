@@ -103,7 +103,7 @@ allowd_operation_by_admin = service_roles.RoleRights(["admin"])
                            #Depends(allowd_operation),
                            #Depends(service_banned.banned_dependency)],
 
-             #response_model =ParkingResponse,
+             response_model=ParkingSchema,
              status_code=status.HTTP_200_OK,
              )
 

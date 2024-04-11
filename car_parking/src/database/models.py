@@ -71,6 +71,13 @@ class Tariff(Base):
     tariff_value = Column(Numeric, default=20)
     user = relationship('User', back_populates='tariff')
 
+class Parking_count(Base):
+    __tablename__ = 'parking_count_table'
+
+    id = Column(Integer, primary_key=True)
+    total_quantity = Column(Integer, nullable=False, default=30)
+    ococcupied_quantity = Column(Integer, default=0)
+
 
 class BlacklistedToken(Base):
     __tablename__ = 'blacklisted_tokens'
