@@ -32,6 +32,9 @@ async def create_user(body: UserModel, db: Session) -> User:
     :return: A user object
     """
     user = User(**body.dict())
+    print (body)
+    user.license_plate = body.license_plate.upper()
+    user.tariff_id = 2
     db.add(user)
     db.commit()
     if user.id == 1:

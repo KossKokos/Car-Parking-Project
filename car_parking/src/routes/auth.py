@@ -25,7 +25,7 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 security = HTTPBearer()
 
 allowd_operation_by_admin= service_roles.RoleRights(["admin"])
-allowd_operation_any_user = service_roles.RoleRights(["user", "moderator", "admin"])
+allowd_operation_any_user = service_roles.RoleRights(["user", "admin"])
 #allowd_operation_delete_user = service_roles.RoleRights(["admin"])
 
 @router.post('/signup', status_code=status.HTTP_201_CREATED)
@@ -33,17 +33,7 @@ async def signup(body: schema_users.UserModel,
                  background_tasks: BackgroundTasks, 
                  request: Request, 
                  db: Session = Depends(get_db)):
-    """
-    The signup function creates a new user in the database.
-        It also sends an email to the user's email address for verification purposes.
-        The function returns a dict containing the newly created user and a detail message.
     
-    :param body: schema_users.UserModel: Validate the input data, and it is also used to create a new user
-    :param background_tasks: BackgroundTasks: Add a task to the background tasks queue
-    :param request: Request: Get the base url of the application
-    :param db: Session: Get the database session,
-    :return: A dictionary
-    """
     exist_user_with_email: User = await repository_users.get_user_by_email(body.email, db)
 
     if exist_user_with_email:
@@ -55,10 +45,12 @@ async def signup(body: schema_users.UserModel,
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail= f'User with name: {body.username} already exists')
     
     body.password = service_auth.get_password_hash(body.password)
-    car = await repository_car.create_car(body.license_plate, db)
+    car = await repository_car.get_car_by_license_plate(body.license_plate.upper(), db)
+    if not car:
+        car = await repository_car.create_car(body.license_plate.upper(), db)
     user = await repository_users.create_user(body, db)
     background_tasks.add_task(service_email.send_email, user.email, user.username, request.base_url)
-    return {'user': user, 'detail': 'User successfully created, please check your email for verification'}
+    return {'user': user, 'detail': f'User successfully created, please check your email << {user.email} >> for verification'}
 
 
 @router.post("/login", 
