@@ -18,6 +18,10 @@ from ..services import (
 )
 
 
+from ..database import db
+from ..repository.admin import get_cars_with_user_by_car_number
+
+
 router = APIRouter(prefix='/admin', tags=['admin'])
 security = HTTPBearer()
 
@@ -283,3 +287,35 @@ async def unban_car(license_plate:str,
                         }
 
     return car_banned_response
+
+
+@router.get("/admin/users")
+def get_all_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+    return users
+
+@router.put("/admin/users/{user_id}")
+async def admin_update_user(user_id: int, new_data: dict, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        for key, value in new_data.items():
+            setattr(user, key, value)
+        try:
+            db.commit()
+            return {"message": "User information updated successfully"}
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+@router.get("/admin/cars")
+def get_cars_with_user_by_car_number(car_number: str, db: Session = Depends(get_db)):
+    car, user = get_cars_with_user_by_car_number(db, car_number)
+    if car:
+        if user:
+            return {"car": car, "user": user}
+        else:
+            return {"car": car}
+    else:
+        return {"message": "Car not found"}
