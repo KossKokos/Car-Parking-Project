@@ -366,8 +366,8 @@ async def unban_car(
     "/search_user/{license_plate}",
     # response_model=CarResponse | UserByCarResponse,
     status_code=status.HTTP_200_OK,
-    # dependencies=[Depends(service_logout.logout_dependency),
-    #               Depends(allowd_operation_by_admin)],
+    dependencies=[Depends(service_logout.logout_dependency),
+                  Depends(allowd_operation_by_admin)],
 )
 async def search_user_by_license_plate(license_plate: str, db: Session = Depends(get_db)):
     license_plate = license_plate.upper()

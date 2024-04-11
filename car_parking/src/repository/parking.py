@@ -187,16 +187,19 @@ async def seed_parking_count(db:Session):
 
 async def free_parking_places(date: str, db: Session):
     date_format = "%Y.%m.%d %H:%M"
-    dt = datetime.strptime(date, date_format)
-    kiev_timezone = pytz.timezone("Europe/Kiev")
-    dt = kiev_timezone.localize(dt)
-    all_parking = db.query(Parking).all()
-    quantity = db.query(Parking_count).first()
-    # now = datetime.now(pytz.timezone('Europe/Kiev'))
-    all_places = 0
-    for parking in all_parking:
-        if parking.enter_time <= dt and (parking.departure_time is None or dt < parking.departure_time):
-            all_places += 1
-    free_places = quantity.total_quantity - all_places
-    occupied_places = all_places
-    return occupied_places
+    try:
+        dt = datetime.strptime(date, date_format)
+        kiev_timezone = pytz.timezone("Europe/Kiev")
+        dt = kiev_timezone.localize(dt)
+        all_parking = db.query(Parking).all()
+        quantity = db.query(Parking_count).first()
+        # now = datetime.now(pytz.timezone('Europe/Kiev'))
+        all_places = 0
+        for parking in all_parking:
+            if parking.enter_time <= dt and (parking.departure_time is None or dt < parking.departure_time):
+                all_places += 1
+        free_places = quantity.total_quantity - all_places
+        occupied_places = all_places
+        return occupied_places
+    except Exception:
+        return "Wrong date format"
