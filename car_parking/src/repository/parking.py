@@ -6,6 +6,7 @@ from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, User
 from ..schemas.parking import CurrentParking, ParkingResponse, ParkingInfo, ParkingSchema
 from ..repository.car import create_car
 from ..conf.tariffs import STANDART, AUTORIZED
+from ..repository import users as repository_users
 from datetime import datetime, timezone
 import pytz
 
@@ -46,31 +47,83 @@ async def change_parking_status(parking_place_id: int, db: Session):
     db.commit()
     return parking_place
 
+# original code:
+# async def entry_to_the_parking(license_plate: str, db: Session):
+#     car = db.query(Car).filter(Car.license_plate == license_plate).first()
+#     if not car:
+#         await create_car(license_plate, db)
+#     parking_place = db.query(Parking).filter(Parking.license_plate == license_plate, Parking.status == False).first()
+    
+#     if not parking_place:
+#         parking_place = await create_parking_place(license_plate, db)
+#         parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
+#                                                     departure_time=parking_place.departure_time,
+#                                                     license_plate=parking_place.license_plate,
+#                                                     amount_paid=parking_place.amount_paid,
+#                                                     duration=parking_place.duration,
+#                                                     status=False),
+#                                 #status="You can park."
+#         return parking
+    
+#     parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
+#                                                  departure_time=parking_place.departure_time,
+#                                                  license_plate=parking_place.license_plate,
+#                                                  amount_paid=parking_place.amount_paid,
+#                                                  duration=parking_place.duration,
+#                                                  status=False),
+#                             status="This car already in parking.")
+#     return parking
 
+# second version - checked if user registrated or not
 async def entry_to_the_parking(license_plate: str, db: Session):
     car = db.query(Car).filter(Car.license_plate == license_plate).first()
     if not car:
         await create_car(license_plate, db)
     parking_place = db.query(Parking).filter(Parking.license_plate == license_plate, Parking.status == False).first()
-    if not parking_place:
-        parking_place = await create_parking_place(license_plate, db)
+    
+    #check if is there registrated user
+    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
+    if user:
+        if not parking_place:
+            parking_place = await create_parking_place(license_plate, db)
+            parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
+                                                        departure_time=parking_place.departure_time,
+                                                        license_plate=parking_place.license_plate,
+                                                        amount_paid=parking_place.amount_paid,
+                                                        duration=parking_place.duration,
+                                                        status=False),
+                                    status = f"Parking successful, please check your email<< {user.email} >> for details")
+            return parking
+    
         parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
-                                                     departure_time=parking_place.departure_time,
-                                                     license_plate=parking_place.license_plate,
-                                                     amount_paid=parking_place.amount_paid,
-                                                     duration=parking_place.duration,
-                                                     status=False),
-                                #status="You can park."
-                                status = "Parking successfull, please check your email for details")
+                                                    departure_time=parking_place.departure_time,
+                                                    license_plate=parking_place.license_plate,
+                                                    amount_paid=parking_place.amount_paid,
+                                                    duration=parking_place.duration,
+                                                    status=False),
+                                status="This car already in parking.")
         return parking
-    parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
-                                                 departure_time=parking_place.departure_time,
-                                                 license_plate=parking_place.license_plate,
-                                                 amount_paid=parking_place.amount_paid,
-                                                 duration=parking_place.duration,
-                                                 status=False),
-                            status="This car already in parking.")
-    return parking
+    else:
+        if not parking_place:
+            parking_place = await create_parking_place(license_plate, db)
+            parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
+                                                        departure_time=parking_place.departure_time,
+                                                        license_plate=parking_place.license_plate,
+                                                        amount_paid=parking_place.amount_paid,
+                                                        duration=parking_place.duration,
+                                                        status=False),
+                                    #status="You can park."
+                                    status = "Parking successful, to get details please sign up for our Car Parking service")
+            return parking
+    
+        parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
+                                                    departure_time=parking_place.departure_time,
+                                                    license_plate=parking_place.license_plate,
+                                                    amount_paid=parking_place.amount_paid,
+                                                    duration=parking_place.duration,
+                                                    status=False),
+                                status="This car already in parking.")
+        return parking
 
 
 async def exit_from_the_parking(license_plate: str, db: Session):

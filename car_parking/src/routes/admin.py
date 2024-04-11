@@ -215,7 +215,7 @@ async def ban_car(license_plate:str,
                                 current_user: User = Depends(service_auth.get_current_user),
                                 db: Session = Depends(get_db)):
 
-
+    license_plate = license_plate.upper()
     car = await repository_cars.get_car_by_license_plate(license_plate, db)
     if not car:
         raise HTTPException(status_code=404, detail="Car not found")
@@ -255,7 +255,7 @@ async def unban_car(license_plate:str,
                                 current_user: User = Depends(service_auth.get_current_user),
                                 db: Session = Depends(get_db)):
 
-
+    license_plate = license_plate.upper()
     car = await repository_cars.get_car_by_license_plate(license_plate, db)
     if not car:
         raise HTTPException(status_code=404, detail="Car not found")

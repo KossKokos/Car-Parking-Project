@@ -68,7 +68,7 @@ class Tariff(Base):
 
     id = Column(Integer, primary_key=True)
     tariff_name = Column(String(30), nullable=False, unique=True)
-    tariff_value = Column(Numeric, default=0)
+    tariff_value = Column(Numeric, default=20)
     user = relationship('User', back_populates='tariff')
 
 

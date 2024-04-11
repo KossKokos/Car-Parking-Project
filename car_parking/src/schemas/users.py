@@ -8,6 +8,7 @@ class UserModel(BaseModel):
     email: EmailStr = Field(default='example@gmail.com')
     password: str = Field(min_length=8, max_length=15, default='password')
     license_plate: str
+    tariff_id: int = 2
 
       
 class UserResponse(BaseModel):

@@ -106,13 +106,14 @@ allowd_operation_by_admin = service_roles.RoleRights(["admin"])
              #response_model =ParkingResponse,
              status_code=status.HTTP_200_OK,
              )
+
+
 async def enter_parking(license_plate, 
                         #current_user: User = Depends(service_auth.get_current_user),
                         db: Session = Depends(get_db),
                         background_tasks: BackgroundTasks = BackgroundTasks()):
-   
+    license_plate = license_plate.upper()
     parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
-    print (parking_place.info)
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user: 
         enter_time = parking_place.info.enter_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -120,6 +121,7 @@ async def enter_parking(license_plate,
         background_tasks.add_task(service_email.praking_enter_message, 
                                 user.email, 
                                 user.username,
+                                user.license_plate,
                                 enter_time,
                                 tariff.tariff_name,
                                 tariff.tariff_value,
@@ -165,5 +167,6 @@ async def exit_parking(license_plate,
                        #current_user: User = Depends(service_auth.get_current_user),
                        db: Session = Depends(get_db),
                        background_tasks: BackgroundTasks = BackgroundTasks()):
+    license_plate = license_plate.upper()
     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
     return parking_info
