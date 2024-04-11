@@ -7,3 +7,7 @@ Car_Parking-Project/.vscode
 .vscode
 **/__pycache__
 Car-Parking-Project/car-parking/postgres-data
+car_parking/src/repository_or
+car_parking/src/routes_or
+idea
+main_or.py

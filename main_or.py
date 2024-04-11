@@ -7,7 +7,6 @@ from sqlalchemy import text
 
 from car_parking.src.routes import auth, users, parking, admin
 from car_parking.src.database.db import get_db
-from car_parking.src.repository import tariff as repository_tariff
 
 app = FastAPI(debug=True)
 
