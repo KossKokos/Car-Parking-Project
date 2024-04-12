@@ -30,86 +30,12 @@ security = HTTPBearer()
 allowd_operation = service_roles.RoleRights(["user", "admin"])
 allowd_operation_by_admin = service_roles.RoleRights(["admin"])
 
-#original code
-# @router.post('/parking/{license_plate}',
-#              response_model=ParkingSchema,
-#              status_code=status.HTTP_200_OK,
-#              )
-# async def enter_parking(license_plate, db: Session = Depends(get_db)):
-#     parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
-#     return parking_place
 
-
-# # first working version
-# @router.post('/parking/{license_plate}',
-#              dependencies=[Depends(service_logout.logout_dependency), 
-#                            Depends(allowd_operation),
-#                            Depends(service_banned.banned_dependency)],
-
-#              #response_model =ParkingResponse,
-#              status_code=status.HTTP_200_OK,
-#              )
-# async def enter_parking(license_plate, 
-#                         current_user: User = Depends(service_auth.get_current_user),
-#                         db: Session = Depends(get_db),
-#                         background_tasks: BackgroundTasks = BackgroundTasks()):
-#     parking = await repository_parking.entry_to_the_parking(license_plate, db)
-#     background_tasks.add_task(service_email.praking_enter_message, 
-#                               current_user.email, 
-#                               current_user.username,
-#                               Request.base_url)
-#     return {'detail': 'Parking successfull, please check your email for details'}
-#     #return {'Parking place': parking, 'detail': 'Parking place successfully created, please check your email for details'}
-#     #return parking
-
-
-# # Second working version with athentification
-# @router.post('/parking/{license_plate}',
-#              dependencies=[Depends(service_logout.logout_dependency), 
-#                            Depends(allowd_operation),
-#                            Depends(service_banned.banned_dependency)],
-
-#              #response_model =ParkingResponse,
-#              status_code=status.HTTP_200_OK,
-#              )
-# async def enter_parking(license_plate, 
-#                         current_user: User = Depends(service_auth.get_current_user),
-#                         db: Session = Depends(get_db),
-#                         background_tasks: BackgroundTasks = BackgroundTasks()):
-#     """
-#     The enter_parking function is used to enter the parking.
-#         It takes a license plate as an argument and returns the parking place where it was parked.
-    
-    
-#     :param license_plate: Identify the car that is entering the parking
-#     :param current_user: User: Get the current user from the database
-#     :param db: Session: Get the database session
-#     :param background_tasks: BackgroundTasks: Pass a backgroundtasks object to the function
-#     :return: A parkingplace object, which contains a licenseplate object
-#     :doc-author: Trelent
-#     """
-#     parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
-#     #print (parking_place.info.enter_time)
-#     enter_time = parking_place.info.enter_time.strftime("%Y-%m-%d %H:%M:%S")
-#     background_tasks.add_task(service_email.praking_enter_message, 
-#                               current_user.email, 
-#                               current_user.username, enter_time,
-#                               Request.base_url)
-#     return parking_place
-
-#third version without auathentification
 @router.post('/parking/{license_plate}',
-             #dependencies=[Depends(service_logout.logout_dependency), 
-                           #Depends(allowd_operation),
-                           #Depends(service_banned.banned_dependency)],
-
              response_model=ParkingSchema | str,
              status_code=status.HTTP_200_OK,
              )
-
-
 async def enter_parking(license_plate, 
-                        #current_user: User = Depends(service_auth.get_current_user),
                         db: Session = Depends(get_db),
                         background_tasks: BackgroundTasks = BackgroundTasks()):
     license_plate = license_plate.upper()
@@ -156,19 +82,40 @@ async def enter_parking(license_plate,
 
 
 #exit code second version
+# @router.post('/exit_parking/{license_plate}',
+#              response_model=ParkingSchema | str,
+#              status_code=status.HTTP_200_OK,
+#              )
+# async def exit_parking(license_plate, 
+#                        db: Session = Depends(get_db),
+#                        background_tasks: BackgroundTasks = BackgroundTasks()):
+#     license_plate = license_plate.upper()
+#     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
+#     return parking_info
+
+
+#exit code third version
 @router.post('/exit_parking/{license_plate}',
-            #  dependencies=[Depends(service_logout.logout_dependency), 
-            #                Depends(allowd_operation),
-            #                Depends(service_banned.banned_dependency)],
              response_model=ParkingSchema | str,
              status_code=status.HTTP_200_OK,
              )
 async def exit_parking(license_plate, 
-                       #current_user: User = Depends(service_auth.get_current_user),
                        db: Session = Depends(get_db),
                        background_tasks: BackgroundTasks = BackgroundTasks()):
     license_plate = license_plate.upper()
     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
+    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
+    if user: 
+        enter_time = parking_info.info.enter_time.strftime("%Y-%m-%d %H:%M:%S")
+        tariff = await repository_tariff.get_tariff_by_tariff_id(user.tariff_id, db)
+        background_tasks.add_task(service_email.praking_exit_message, 
+                                user.email, 
+                                user.username,
+                                user.license_plate,
+                                enter_time,
+                                tariff.tariff_name,
+                                tariff.tariff_value,
+                                Request.base_url)
     return parking_info
 
 
