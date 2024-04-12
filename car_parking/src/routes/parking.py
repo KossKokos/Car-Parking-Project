@@ -121,6 +121,7 @@ async def enter_parking(license_plate,
 #                                 request.base_url)
 #     return parking_info
 
+
 #exit code second version
 @router.post('/exit_parking/{license_plate}',
              response_model=ParkingSchema | str,
@@ -137,8 +138,7 @@ async def exit_parking(license_plate,
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user:
         enter_time = parking_info.info.enter_time.strftime("%Y-%m-%d %H:%M:%S")
-        #departure_time = parking_info.info.departure_time.strftime("%Y-%m-%d %H:%M:%S")
-        departure_time = parking_info.info.departure_time
+        departure_time = parking_info.info.departure_time.strftime("%Y-%m-%d %H:%M:%S")
         tariff = await repository_tariff.get_tariff_by_tariff_id(user.tariff_id, db)                                  
         background_tasks.add_task(service_email.praking_exit_message,
                             user.email, 
@@ -166,7 +166,7 @@ async def exit_parking(license_plate,
             status_code=status.HTTP_202_ACCEPTED)
 async def confirm_payment(parking_place_id: str, db: Session = Depends(get_db)):
     await repository_parking.change_parking_status_authorised(parking_place_id, db)
-    #return {'detail': 'payment is confirmed'}
+    return {'detail': 'Payment confirmed'}
 
 
 @router.get('/free_place/{date}',
