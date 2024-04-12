@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 # from src.database.models import User, Image
-from ..database.models import User, Parking, Car, Parking_count
+from ..database.models import User, Parking, Car, Parking_count, Tariff
 from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponse
 from ..schemas.parking import CurrentParking, ParkingResponse, ParkingInfo, ParkingSchema
 from ..repository.car import create_car
@@ -31,21 +31,48 @@ async def create_parking_place(license_plate: str, db: Session):
     db.commit()
     return parking_place
 
+# original code
+# async def change_parking_status(parking_place_id: int, db: Session):
+#     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
+#     user = db.query(User).filter(User.license_plate == parking_place.license_plate).first()
+#     departure_time = datetime.now(pytz.timezone('Europe/Kiev'))
+#     duration = calculate_datetime_difference(parking_place.enter_time, departure_time)
+#     parking_place.status = True
+#     parking_place.departure_time = departure_time
+#     parking_place.duration = duration
+#     if user:
+#         parking_place.amount_paid = calculate_cost(duration, AUTORIZED)
+#     else:
+#         parking_place.amount_paid = calculate_cost(duration, STANDART)
+#     db.commit()
+#     return parking_place
 
+# second version
 async def change_parking_status(parking_place_id: int, db: Session):
+    parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
+    parking_place.status = True
+    db.commit()
+    return parking_place
+
+async def calculate_invoice(parking_place_id: int, db: Session):
     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
     user = db.query(User).filter(User.license_plate == parking_place.license_plate).first()
     departure_time = datetime.now(pytz.timezone('Europe/Kiev'))
     duration = calculate_datetime_difference(parking_place.enter_time, departure_time)
-    parking_place.status = True
     parking_place.departure_time = departure_time
     parking_place.duration = duration
     if user:
-        parking_place.amount_paid = calculate_cost(duration, AUTORIZED)
+        tariff = db.query(Tariff).filter_by(id=user.tariff_id).first()
+        parking_place.amount_paid = calculate_cost(duration, int(tariff.tariff_value))
     else:
-        parking_place.amount_paid = calculate_cost(duration, STANDART)
+        tariff = db.query(Tariff).filter_by(id=1).first()
+        parking_place.amount_paid = calculate_cost(duration, int(tariff.tariff_value))
     db.commit()
     return parking_place
+
+async def get_parking_place_by_car_license_plate(license_plate: str, db: Session) -> Parking | None:
+    return db.query(Parking).filter(Parking.license_plate==license_plate, Parking.status == False).first()
+
 
 # original code:
 # async def entry_to_the_parking(license_plate: str, db: Session):
@@ -159,7 +186,10 @@ async def exit_from_the_parking(license_plate: str, db: Session):
             .first()
         )
         if parking_place:
-            parking_place = await change_parking_status(parking_place.id, db)
+            parking_place = await calculate_invoice(parking_place.id, db)
+            departure_time = datetime.now(pytz.timezone('Europe/Kiev'))
+            duration = calculate_datetime_difference(parking_place.enter_time, departure_time)
+            parking_place.duration = duration
             parking = ParkingSchema(
                 info=ParkingResponse(
                     enter_time=parking_place.enter_time,
@@ -169,7 +199,7 @@ async def exit_from_the_parking(license_plate: str, db: Session):
                     duration=parking_place.duration,
                     status=False,
                 ),
-                status="You can go.",
+                status = f"Parking invoice sent to your email << {user.email}>>. Please confirm payment ",
             )
             return parking
         return "This car not in parking"
@@ -220,3 +250,20 @@ async def seed_parking_count(db:Session):
 
     # Close the session
     db.close()
+
+
+
+# async def confirm_payment(license_plate: int, db: Session):
+#     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
+#     user = db.query(User).filter(User.license_plate == parking_place.license_plate).first()
+#     departure_time = datetime.now(pytz.timezone('Europe/Kiev'))
+#     duration = calculate_datetime_difference(parking_place.enter_time, departure_time)
+#     parking_place.status = True
+#     parking_place.departure_time = departure_time
+#     parking_place.duration = duration
+#     if user:
+#         parking_place.amount_paid = calculate_cost(duration, AUTORIZED)
+#     else:
+#         parking_place.amount_paid = calculate_cost(duration, STANDART)
+#     db.commit()
+#     return parking_place

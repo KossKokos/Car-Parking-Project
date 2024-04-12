@@ -107,10 +107,10 @@ async def praking_enter_message(email: EmailStr,
         print(err)
 
 
-
 async def praking_exit_message(email: EmailStr, 
                                username: str, 
-                               license_plate:str, 
+                               license_plate:str,
+                               parking_place_id, 
                                enter_time,
                                departure_time, 
                                tariff_name, 
@@ -126,7 +126,8 @@ async def praking_exit_message(email: EmailStr,
             recipients=[email],
             template_body={"host": host, 
                            "username": username,
-                           "license_plate": license_plate, 
+                           "license_plate": license_plate,
+                           "parking_place_id": parking_place_id,
                            "enter_time" :enter_time,
                            "departure_time": departure_time, 
                            "tariff_name": tariff_name,
@@ -142,16 +143,6 @@ async def praking_exit_message(email: EmailStr,
     except ConnectionErrors as err:
         print(err)
 
-"""
-        background_tasks.add_task(service_email.praking_exit_message,
-                            user.email, 
-                            user.username,
-                            user.license_plate,
-                            enter_time,
-                            departure_time,
-                            tariff.tariff_name,
-                            tariff.tariff_value,
-                            parking_info.info.duration,
-                            parking_info.info.amount_paid,
-                            Request.base_url)
-"""
+ 
+
+
