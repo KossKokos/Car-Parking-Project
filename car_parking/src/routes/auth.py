@@ -28,7 +28,8 @@ allowd_operation_by_admin= service_roles.RoleRights(["admin"])
 allowd_operation_any_user = service_roles.RoleRights(["user", "admin"])
 #allowd_operation_delete_user = service_roles.RoleRights(["admin"])
 
-@router.post('/signup', status_code=status.HTTP_201_CREATED)
+@router.post('/signup', 
+             status_code=status.HTTP_201_CREATED)
 async def signup(body: schema_users.UserModel, 
                  background_tasks: BackgroundTasks, 
                  request: Request, 
@@ -59,6 +60,7 @@ async def signup(body: schema_users.UserModel,
     if not car:
         car = await repository_car.create_car(body.license_plate.upper(), db)
     user = await repository_users.create_user(body, db)
+    print(request.base_url) 
     background_tasks.add_task(service_email.send_email, user.email, user.username, request.base_url)
     return {'user': user, 'detail': f'User successfully created, please check your email << {user.email} >> for verification'}
 
