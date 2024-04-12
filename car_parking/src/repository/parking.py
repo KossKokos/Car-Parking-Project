@@ -156,7 +156,7 @@ async def entry_to_the_parking(license_plate: str, db: Session):
 #     return "This car not in parking"
 
 
-#Original code
+#First version: unregitered user payment confims automatically
 async def exit_from_the_parking(license_plate: str, db: Session):
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user:
@@ -207,33 +207,57 @@ async def exit_from_the_parking(license_plate: str, db: Session):
         return "This car not in parking"
 
 
-# # second version ????
-# async def exit_from_the_parking(license_plate, 
-#                        db: Session = Depends(get_db),
-#                        background_tasks: BackgroundTasks = BackgroundTasks()):
-#     license_plate = license_plate.upper()
-#     parking_place = await repository_parking.get_parking_place_by_car_license_plate(license_plate, db)
-#     print(parking_place.id)
-#     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
-#     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
-#     if user:
-#         enter_time = parking_info.info.enter_time.strftime("%Y-%m-%d %H:%M:%S")
-#         #departure_time = parking_info.info.departure_time.strftime("%Y-%m-%d %H:%M:%S")
-#         departure_time = parking_info.info.departure_time
-#         tariff = await repository_tariff.get_tariff_by_tariff_id(user.tariff_id, db)                                  
-#         background_tasks.add_task(service_email.praking_exit_message,
-#                             user.email, 
-#                             user.username,
-#                             user.license_plate,
-#                             parking_place.id,
-#                             enter_time,
-#                             departure_time,
-#                             tariff.tariff_name,
-#                             tariff.tariff_value,
-#                             parking_info.info.duration,
-#                             parking_info.info.amount_paid,
-#                             Request.base_url)
-#     return parking_info
+# second version: unregistered user must conform exit by confirm payment endpoint
+async def exit_from_the_parking(license_plate: str, 
+                                db: Session):
+    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
+    if user:
+        parking_place = (
+            db.query(Parking)
+            .filter(Parking.license_plate == license_plate, Parking.status == False)
+            .first()
+        )
+        if parking_place:
+            parking_place = await calculate_invoice(parking_place.id, db)
+            departure_time = datetime.now(pytz.timezone('Europe/Kiev'))
+            duration = calculate_datetime_difference(parking_place.enter_time, departure_time)
+            parking_place.duration = duration
+            parking = ParkingSchema(
+                info=ParkingResponse(
+                    enter_time=parking_place.enter_time,
+                    departure_time=parking_place.departure_time,
+                    license_plate=parking_place.license_plate,
+                    amount_paid=parking_place.amount_paid,
+                    duration=parking_place.duration,
+                    status=False,
+                ),
+                status = f"Parking invoice sent to your email << {user.email}>>. Please confirm payment ",
+            )
+            return parking
+        return "This car not in parking"
+    
+    else:
+        parking_place = (
+            db.query(Parking)
+            .filter(Parking.license_plate == license_plate, Parking.status == False)
+            .first()
+        )
+        if parking_place:
+            parking_place = await calculate_invoice(parking_place.id, db)
+            parking = ParkingSchema(
+                info=ParkingResponse(
+                    enter_time=parking_place.enter_time,
+                    departure_time=parking_place.departure_time,
+                    license_plate=parking_place.license_plate,
+                    amount_paid=parking_place.amount_paid,
+                    duration=parking_place.duration,
+                    status=False,
+                ),
+                status = f"Your parking ID = << {parking_place.id} >>Confirm paiment, please.",
+            )
+            return parking
+        return "This car not in parking"
+
 
 async def seed_parking_count(db:Session):
         # Check if the Tariff table is empty
