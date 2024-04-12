@@ -1,11 +1,12 @@
 from sqlalchemy.orm import Session
-
+from fastapi import File
 # from src.database.models import User, Image
 from ..database.models import User, Parking, Car, Parking_count, Tariff
 from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponse
 from ..schemas.parking import CurrentParking, ParkingResponse, ParkingInfo, ParkingSchema
 from ..repository.car import create_car
 from ..conf.tariffs import STANDART, AUTORIZED
+from ..conf.extensions import EXTENSIONS
 from ..repository import users as repository_users
 from datetime import datetime, timezone
 import pytz
@@ -305,3 +306,10 @@ async def free_parking_places(date: str, db: Session):
     
 async def get_parking_place_by_car_license_plate(license_plate: str, db: Session) -> Parking | None:
     return db.query(Parking).filter(Parking.license_plate==license_plate, Parking.status == False).first()
+
+
+async def is_valid_file_ext(file: File) -> bool:
+    file_ext = file.filename.split(".")[-1]
+    if file_ext not in EXTENSIONS:
+        return False
+    return True

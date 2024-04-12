@@ -41,6 +41,10 @@ qrcode = {version = "7.4.2", extras = ["pil"]}
 psycopg2-binary = "2.9.9"
 psycopg2 = "2.9.5"
 pytz = "^2024.1"
+tensorflow-io-gcs-filesystem = "0.23.1"
+tensorflow = "2.8.0"
+opencv-python = "4.9.0.80"
+protobuf = "3.20"
 
 
 [tool.poetry.group.dev.dependencies]
