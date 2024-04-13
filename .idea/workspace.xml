@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c63afbc2-8a8d-47fc-8208-f6162def403e" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/car_parking/src/conf_or/config.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/conf_or/messages.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/repository/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/car_parking/src/repository/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/repository/cars.py" beforeDir="false" afterPath="$PROJECT_DIR$/car_parking/src/repository/cars.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/repository/comments.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/repository/images.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/repository/parking.py" beforeDir="false" afterPath="$PROJECT_DIR$/car_parking/src/repository/parking.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/repository/tags.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/repository/users.py" beforeDir="false" afterPath="$PROJECT_DIR$/car_parking/src/repository/users.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/routes/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/car_parking/src/routes/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/routes/comments.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/routes/images.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/routes/parking.py" beforeDir="false" afterPath="$PROJECT_DIR$/car_parking/src/routes/parking.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/routes/rating.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/routes/users.py" beforeDir="false" afterPath="$PROJECT_DIR$/car_parking/src/routes/users.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/schemas/comments.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/schemas/images.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/schemas/rating.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/services/cloudinary.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/car_parking/src/services/qr_code.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main_or.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="parking_repo" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2eocKcERgb2PTQZpj7Pga5VrcoO" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "dev",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/Users/PC/PycharmProjects/Car-Parking-Project/car_parking",
+    "settings.editor.selected.configurable": "com.jetbrains.python.black.configuration.BlackFormatterConfigurable"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\PC\PycharmProjects\Car-Parking-Project\car_parking\src\schemas" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c63afbc2-8a8d-47fc-8208-f6162def403e" name="Changes" comment="" />
+      <created>1712574308263</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1712574308263</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

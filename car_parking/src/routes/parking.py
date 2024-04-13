@@ -4,13 +4,20 @@ from sqlalchemy.orm import Session
 
 from ..database.db import get_db
 from ..database.models import User, Tariff
-from ..repository import users as repository_users
-from ..repository import parking as repository_parking
-from ..repository import tariff as repository_tariff
+# from ..repository import users as repository_users
+# from ..repository import parking as repository_parking
+# from ..repository import tariff as repository_tariff
 from ..repository.logout import token_to_blacklist
 from ..services.auth import service_auth
 from ..schemas.users import UserResponse, UserParkingResponse
+# from car_parking.src.repository import admin as repository_admin
 from ..schemas.parking import ParkingInfo, ParkingSchema, ParkingResponse
+from ..repository import (
+    users as repository_users,
+    parking as repository_parking,
+    tariff as repository_tariff,
+    admin as repository_admin
+)
 from ..services import (
     email as service_email,
     roles as service_roles,
@@ -106,3 +113,6 @@ async def confirm_payment(parking_place_id: str, db: Session = Depends(get_db)):
 async def occupied_places(date: str, db: Session = Depends(get_db)):
     occupied = await repository_parking.free_parking_places(date, db)
     return occupied
+
+
+

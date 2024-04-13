@@ -50,6 +50,6 @@ async def get_user_profile(current_user: User = Depends(service_auth.get_current
     :param db: Session: Get the database connection
     :return: A dictionary
     """
-    user_profile = await repository_users.get_parking_info(current_user, db)
+    user_profile = await repository_users.get_parking_info(current_user.license_plate, db)
 
     return user_profile

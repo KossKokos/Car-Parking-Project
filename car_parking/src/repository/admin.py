@@ -1,8 +1,12 @@
 from sqlalchemy.orm import Session
 
-#from src.database.models import User, Image
+
 from ..database.models import User
-from ..schemas.users import UserModel, UserRoleUpdate
+from ..repository import users as repository_users
+from ..schemas.users import UserRoleUpdate
+import csv
+import os
+from pathlib import Path
 
 
 async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
@@ -85,3 +89,29 @@ async def update_unbanned_status(user: User, db: Session):
 
 
 # async def add_tariff(tariff_name: str, tariff_cost: int, db: Session)
+
+
+async def create_parking_csv(license_plate, filename, db: Session):
+    default_dir = r"\csv_files"
+    path = str(Path(__file__).parent.parent.parent) + default_dir
+    file_path = os.path.join(path, f"{filename}.csv")
+    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
+    parking_history = await repository_users.get_parking_info(license_plate, db)
+    with open(file_path, 'w', newline='') as csvfile:
+        fieldnames = ["Name", 'Total Payment Amount', 'Total Parking Time', 'enter_time', 'departure_time', 'license_plate', 'amount_paid', 'duration', 'status', ]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        for parking_info in parking_history.parking_info:
+            writer.writerow({
+                'enter_time': parking_info.enter_time,
+                'departure_time': parking_info.departure_time,
+                'license_plate': parking_info.license_plate,
+                'amount_paid': parking_info.amount_paid,
+                'duration': parking_info.duration,
+                'status': parking_info.status
+            })
+        writer.writerow({'Name': parking_history.user})
+        writer.writerow({'Total Payment Amount': parking_history.total_payment_amount})
+        writer.writerow({'Total Parking Time': parking_history.total_parking_time})
+    return "CSV file created"

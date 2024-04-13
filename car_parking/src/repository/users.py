@@ -1,16 +1,9 @@
-from typing import List
-
 import pytz
 from sqlalchemy.orm import Session
-
- 
-# from src.database.models import User, Image
-from ..database.models import User, Parking
-from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponse
+from ..database.models import User, Parking, Tariff
+from ..schemas.users import UserModel, UserParkingResponse, UserResponse
 from ..schemas.parking import CurrentParking, ParkingResponse, ParkingInfo
-
-from ..conf.tariffs import STANDART, AUTORIZED
-from datetime import datetime, timezone
+from datetime import datetime
 
 
 def calculate_datetime_difference(start_time, end_time):
@@ -137,6 +130,7 @@ async def get_user_by_id(user_id: int, db: Session) -> User | None:
 
     return db.query(User).filter(User.id==user_id).first()
 
+
 async def delete_user(user_id: int, db: Session) -> None:
     """
     The delete_user function deletes a user from the database based on the user ID.
@@ -171,14 +165,17 @@ async def calculate_amount_duration(list_of_parking: list[[Parking]]):
     return total_duration
 
 
-async def get_parking_info(user: User, db: Session):
-    parking_info = db.query(Parking).filter(Parking.license_plate == user.license_plate, Parking.status == True).all()
+async def get_parking_info(license_plate: str, db: Session):
+    user = await get_user_by_car_license_plate(license_plate, db)
+    license_plate = license_plate.upper()
+    parking_info = db.query(Parking).filter(Parking.license_plate == license_plate, Parking.status == True).all()
+    print(parking_info)
     total_payment_amount = await calculate_amount_cost(parking_info)
     total_parking_time = await calculate_amount_duration(parking_info)
-    parking_history = ParkingInfo(user=user.username, total_payment_amount=total_payment_amount, total_parking_time=total_parking_time, parking_info=[])
+    parking_history = ParkingInfo(user=user.username if user else "Unregister user", total_payment_amount=total_payment_amount, total_parking_time=total_parking_time, parking_info=[])
     for parking in parking_info:
-        parking_history.parking_info.append(ParkingResponse(enter_time=parking.enter_time,
-                                                            departure_time=parking.departure_time,
+        parking_history.parking_info.append(ParkingResponse(enter_time=parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
+                                                            departure_time=parking.departure_time.strftime("%Y-%m-%d %H:%M:%S"),
                                                             license_plate=parking.license_plate,
                                                             amount_paid=parking.amount_paid,
                                                             duration=parking.duration,
@@ -188,15 +185,16 @@ async def get_parking_info(user: User, db: Session):
 
 async def get_user_me(user: User, db: Session):
     user_parking = db.query(Parking).filter(Parking.license_plate == user.license_plate, Parking.status == False).first()
+    tariff = db.query(Tariff).filter_by(id=user.tariff_id).first()
     if user_parking:
         time_on_parking = calculate_datetime_difference(user_parking.enter_time, datetime.now(pytz.timezone('Europe/Kiev')))
-        current_cost = calculate_cost(time_on_parking, AUTORIZED)
+        current_cost = calculate_cost(time_on_parking, tariff.tariff_value)
 
         user_park = UserParkingResponse(
             user=UserResponse(username=user.username,
                               email=user.email,
                               license_plate=user.license_plate),
-            parking=CurrentParking(enter_time=user_parking.enter_time,
+            parking=CurrentParking(enter_time=user_parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                                    time_on_parking=time_on_parking,
                                    parking_cost=current_cost
                                    )
