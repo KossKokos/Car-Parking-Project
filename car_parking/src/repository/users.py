@@ -59,17 +59,17 @@ async def get_user_by_email(email: str, db: Session) -> User | None:
     return db.query(User).filter(User.email == email).first()
 
 
-async def get_user_by_username(username: str, db: Session) -> User | None:
-    """
-    The get_user_by_email function takes in an email and a database session,
-    and returns the user with that email if it exists. If no such user exists,
-    it returns None.
+# async def get_user_by_username(username: str, db: Session) -> User | None:
+#     """
+#     The get_user_by_email function takes in an email and a database session,
+#     and returns the user with that email if it exists. If no such user exists,
+#     it returns None.
 
-    :param email: str: Specify the email of the user we want to get from our database
-    :param db: Session: Pass the database session to the function
-    :return: A user object or none if the user is not found
-    """
-    return db.query(User).filter(User.username == username).first()
+#     :param email: str: Specify the email of the user we want to get from our database
+#     :param db: Session: Pass the database session to the function
+#     :return: A user object or none if the user is not found
+#     """
+#     return db.query(User).filter(User.username == username).first()
 
 
 async def update_token(user: User, refresh_token: str, db: Session) -> None:
@@ -177,7 +177,8 @@ async def get_parking_info(user: User, db: Session):
     total_parking_time = await calculate_amount_duration(parking_info)
     parking_history = ParkingInfo(user=user.username, total_payment_amount=total_payment_amount, total_parking_time=total_parking_time, parking_info=[])
     for parking in parking_info:
-        parking_history.parking_info.append(ParkingResponse(enter_time=parking.enter_time,
+        parking_history.parking_info.append(ParkingResponse(id=parking.id,
+                                                            enter_time=parking.enter_time,
                                                             departure_time=parking.departure_time,
                                                             license_plate=parking.license_plate,
                                                             amount_paid=parking.amount_paid,

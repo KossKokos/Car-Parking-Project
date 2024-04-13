@@ -67,7 +67,6 @@ async def exit_parking(license_plate,
                         db: Session = Depends(get_db)):
     license_plate = license_plate.upper()
     parking_place = await repository_parking.get_parking_place_by_car_license_plate(license_plate, db)
-    print(parking_place.id)
     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user:

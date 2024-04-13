@@ -88,29 +88,32 @@ async def entry_to_the_parking(license_plate: str, db: Session):
     if user:
         if not parking_place:
             parking_place = await create_parking_place(license_plate, db)
-            parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
-                                                         departure_time=parking_place.departure_time,
-                                                         license_plate=parking_place.license_plate,
-                                                         amount_paid=parking_place.amount_paid,
-                                                         duration=parking_place.duration,
-                                                         status=False),
+            parking = ParkingSchema(info=ParkingResponse(id=parking_place.id,
+                                                        enter_time=parking_place.enter_time,
+                                                        departure_time=parking_place.departure_time,
+                                                        license_plate=parking_place.license_plate,
+                                                        amount_paid=parking_place.amount_paid,
+                                                        duration=parking_place.duration,
+                                                        status=False),
                                     status=f"Parking successful, please check your email<< {user.email} >> for details")
             count.ococcupied_quantity += 1
             db.commit()
             return parking
     
-        parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
-                                                     departure_time=parking_place.departure_time,
-                                                     license_plate=parking_place.license_plate,
-                                                     amount_paid=parking_place.amount_paid,
-                                                     duration=parking_place.duration,
-                                                     status=False),
+        parking = ParkingSchema(info=ParkingResponse(id=parking_place.id,
+                                                    enter_time=parking_place.enter_time,
+                                                    departure_time=parking_place.departure_time,
+                                                    license_plate=parking_place.license_plate,
+                                                    amount_paid=parking_place.amount_paid,
+                                                    duration=parking_place.duration,
+                                                    status=False),
                                 status="This car already in parking.")
         return parking
     else:
         if not parking_place:
             parking_place = await create_parking_place(license_plate, db)
-            parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
+            parking = ParkingSchema(info=ParkingResponse(id=parking_place.id,
+                                                        enter_time=parking_place.enter_time,
                                                          departure_time=parking_place.departure_time,
                                                          license_plate=parking_place.license_plate,
                                                          amount_paid=parking_place.amount_paid,
@@ -121,7 +124,8 @@ async def entry_to_the_parking(license_plate: str, db: Session):
             db.commit()
             return parking
     
-        parking = ParkingSchema(info=ParkingResponse(enter_time=parking_place.enter_time,
+        parking = ParkingSchema(info=ParkingResponse(id=parking_place.id,
+                                                    enter_time=parking_place.enter_time,
                                                      departure_time=parking_place.departure_time,
                                                      license_plate=parking_place.license_plate,
                                                      amount_paid=parking_place.amount_paid,
@@ -129,82 +133,6 @@ async def entry_to_the_parking(license_plate: str, db: Session):
                                                      status=False),
                                 status="This car already in parking.")
         return parking
-
-#original code
-# async def exit_from_the_parking(license_plate: str, db: Session):
-#     count = db.query(Parking_count).first()
-#     parking_place = (
-#         db.query(Parking)
-#         .filter(Parking.license_plate == license_plate, Parking.status == False)
-#         .first()
-#     )
-#     if parking_place:
-#         parking_place = await change_parking_status(parking_place.id, db)
-#         parking = ParkingSchema(
-#             info=ParkingResponse(
-#                 enter_time=parking_place.enter_time,
-#                 departure_time=parking_place.departure_time,
-#                 license_plate=parking_place.license_plate,
-#                 amount_paid=parking_place.amount_paid,
-#                 duration=parking_place.duration,
-#                 status=False,
-#             ),
-#             status="You can go.",
-#         )
-#         count.ococcupied_quantity -= 1
-#         return parking
-#     return "This car not in parking"
-
-
-#First version: unregitered user payment confims automatically
-async def exit_from_the_parking(license_plate: str, db: Session):
-    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
-    if user:
-        parking_place = (
-            db.query(Parking)
-            .filter(Parking.license_plate == license_plate, Parking.status == False)
-            .first()
-        )
-        if parking_place:
-            parking_place = await calculate_invoice(parking_place.id, db)
-            departure_time = datetime.now(pytz.timezone('Europe/Kiev'))
-            duration = calculate_datetime_difference(parking_place.enter_time, departure_time)
-            parking_place.duration = duration
-            parking = ParkingSchema(
-                info=ParkingResponse(
-                    enter_time=parking_place.enter_time,
-                    departure_time=parking_place.departure_time,
-                    license_plate=parking_place.license_plate,
-                    amount_paid=parking_place.amount_paid,
-                    duration=parking_place.duration,
-                    status=False,
-                ),
-                status = f"Parking invoice sent to your email << {user.email}>>. Please confirm payment ",
-            )
-            return parking
-        return "This car not in parking"
-    
-    else:
-        parking_place = (
-            db.query(Parking)
-            .filter(Parking.license_plate == license_plate, Parking.status == False)
-            .first()
-        )
-        if parking_place:
-            parking_place = await change_parking_status_not_authorised(parking_place.id, db)
-            parking = ParkingSchema(
-                info=ParkingResponse(
-                    enter_time=parking_place.enter_time,
-                    departure_time=parking_place.departure_time,
-                    license_plate=parking_place.license_plate,
-                    amount_paid=parking_place.amount_paid,
-                    duration=parking_place.duration,
-                    status=False,
-                ),
-                status="You can go.",
-            )
-            return parking
-        return "This car not in parking"
 
 
 # second version: unregistered user must conform exit by confirm payment endpoint
@@ -223,7 +151,7 @@ async def exit_from_the_parking(license_plate: str,
             duration = calculate_datetime_difference(parking_place.enter_time, departure_time)
             parking_place.duration = duration
             parking = ParkingSchema(
-                info=ParkingResponse(
+                info=ParkingResponse(id=parking_place.id,
                     enter_time=parking_place.enter_time,
                     departure_time=parking_place.departure_time,
                     license_plate=parking_place.license_plate,
@@ -245,7 +173,7 @@ async def exit_from_the_parking(license_plate: str,
         if parking_place:
             parking_place = await calculate_invoice(parking_place.id, db)
             parking = ParkingSchema(
-                info=ParkingResponse(
+                info=ParkingResponse(id=parking_place.id,
                     enter_time=parking_place.enter_time,
                     departure_time=parking_place.departure_time,
                     license_plate=parking_place.license_plate,
