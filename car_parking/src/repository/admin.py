@@ -11,6 +11,9 @@ from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from ..database import db
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
 
 async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
     """
@@ -121,3 +124,24 @@ async def get_cars_with_user_by_car_number(db: Session, car_number: str):
         return car, user
     else:
         return None, None
+
+
+async def change_tariff(user_id: int, new_tariff: str, db: AsyncSession, holiday: bool = False, current_user: User = None):
+    async with db.begin():
+        user = await db.execute(select(User).filter(User.id == user_id))
+        user = user.scalar_one_or_none()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        if current_user and current_user.role != "admin":
+            raise HTTPException(status_code=403, detail="Permission denied. Only admin can change tariffs.")
+
+        if new_tariff not in ["basic", "premium", "holiday_rate"]:
+            raise HTTPException(status_code=400, detail="Invalid tariff provided")
+
+        if holiday:
+            user.holiday_tariff = new_tariff
+        else:
+            user.tariff = new_tariff
+
+    return {"message": "Tariff changed successfully"}

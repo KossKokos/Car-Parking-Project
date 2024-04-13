@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from ..database.db import get_db
+from ..database.db import get_db, get_async_session
 from ..database.models import User
 from ..repository import (
     users as repository_users, 
     admin as repository_admin, 
     cars as repository_cars
 )
-from ..services.auth import service_auth
+from ..services.auth import service_auth, get_current_user
 from ..schemas.users import UserResponse, UserRoleUpdate
 from ..schemas.cars import CarResponse
 from ..services import (
@@ -17,6 +17,7 @@ from ..services import (
     logout as service_logout,
 )
 
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import db
 from ..repository.admin import get_cars_with_user_by_car_number
@@ -319,3 +320,25 @@ def get_cars_with_user_by_car_number(car_number: str, db: Session = Depends(get_
             return {"car": car}
     else:
         return {"message": "Car not found"}
+    
+    
+
+@router.get('/users')
+async def get_all_users(db: AsyncSession = Depends(get_async_session)):
+    users = await repository_admin.get_all_users(db)
+    return users
+
+
+@router.patch('/change_tariff/{user_id}')
+async def change_user_tariff(
+    user_id: int,
+    new_tariff: str,
+    holiday: bool = False,
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user)
+):
+    try:
+        await repository_admin.change_tariff(user_id, new_tariff, db, holiday, current_user)
+        return {"message": "Tariff changed successfully"}
+    except HTTPException as e:
+        return e
