@@ -6,6 +6,7 @@ from ..repository import users as repository_users
 from ..schemas.users import UserRoleUpdate
 import csv
 import os
+from pathlib import Path
 
 
 async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
@@ -91,8 +92,9 @@ async def update_unbanned_status(user: User, db: Session):
 
 
 async def create_parking_csv(license_plate, filename, db: Session):
-    default_dir = r"C:\Users\PC\PycharmProjects\Car-Parking-Project\car_parking\csv_files"
-    file_path = os.path.join(default_dir, filename)
+    default_dir = r"\csv_files"
+    path = str(Path(__file__).parent.parent.parent) + default_dir
+    file_path = os.path.join(path, f"{filename}.csv")
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     parking_history = await repository_users.get_parking_info(license_plate, db)
     with open(file_path, 'w', newline='') as csvfile:

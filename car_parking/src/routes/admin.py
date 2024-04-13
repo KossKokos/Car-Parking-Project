@@ -15,7 +15,7 @@ from ..database.models import User
 from car_parking.src.repository import (
     users as repository_users,
     admin as repository_admin,
-    cars as repository_cars,
+    car as repository_cars,
 )
 from ..schemas.parking import ParkingInfo
 from ..services.auth import service_auth
