@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 
-# from src.database.models import User, Image
-from ..database.models import User, Parking, Car
-from ..schemas.users import UserModel
+from ..database.models import Car
+
 
 
 async def create_car(license_plate, db: Session) -> Car:

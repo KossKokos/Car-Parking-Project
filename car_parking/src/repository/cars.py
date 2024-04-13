@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from ..database.models import Car
-from ..schemas.users import UserModel, UserRoleUpdate
+
 
 
 

@@ -17,6 +17,7 @@ from car_parking.src.repository import (
     admin as repository_admin,
     cars as repository_cars,
 )
+from ..schemas.parking import ParkingInfo
 from ..services.auth import service_auth
 from ..schemas.users import UserResponse, UserRoleUpdate, UserByCarResponse
 from ..schemas.cars import CarResponse
@@ -376,3 +377,35 @@ async def search_user_by_license_plate(license_plate: str, db: Session = Depends
     if user:
         return user
     return car
+
+
+@router.get(
+        "/create_csv/{license_plate}/{filename}",
+        status_code=status.HTTP_200_OK,
+        # dependencies=[
+        #     Depends(service_logout.logout_dependency),
+        #     Depends(allowd_operation_by_admin),
+        # ],
+    )
+async def create_csv_file(
+        license_plate: str,
+        filename: str,
+        db: Session = Depends(get_db),
+):
+    create_file = await repository_admin.create_parking_csv(license_plate, filename, db)
+    return create_file
+
+
+@router.get(
+        "/get_profile/{license_plate}",
+        response_model=ParkingInfo,
+        status_code=status.HTTP_200_OK,
+        # dependencies=[
+        #     Depends(service_logout.logout_dependency),
+        #     Depends(allowd_operation_by_admin),
+        # ],
+    )
+async def get_profile_by_car(license_plate: str, db: Session = Depends(get_db)):
+    profile = await repository_users.get_parking_info(license_plate, db)
+    print(profile)
+    return profile
