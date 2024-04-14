@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-# import keras
-import tensorflow.compat.v1 as tf
 import keras
 from typing import Tuple
 from .vehicle_detector import VehicleDetector
