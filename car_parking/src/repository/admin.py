@@ -1,12 +1,22 @@
 from sqlalchemy.orm import Session
 
 
-from ..database.models import User
+from ..database.models import Tariff, User, Car
 from ..repository import users as repository_users
 from ..schemas.users import UserRoleUpdate
 import csv
 import os
 from pathlib import Path
+
+from typing import Type
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session, joinedload
+
+from typing import List, Optional
+from ..database import db
+from ..repository import users as repository_users
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 
 async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
@@ -115,3 +125,57 @@ async def create_parking_csv(license_plate, filename, db: Session):
         writer.writerow({'Total Payment Amount': parking_history.total_payment_amount})
         writer.writerow({'Total Parking Time': parking_history.total_parking_time})
     return "CSV file created"
+
+async def get_user_by_email(email: str, db: Session) -> Optional[User]:
+    return db.query(User).filter_by(email=email).first()
+
+
+# async def admin_edit_user(user_id, new_data):  
+#     user_info = await get_user_by_email(user_id, db) 
+#     if user_info:
+#         user = db.query(User).filter_by(id=user_id).first()
+#         for key, value in new_data.items():
+#             setattr(user, key, value)
+#         try:
+#             db.commit()
+#             print("Інформація про користувача успішно оновлена.")
+#         except Exception as e:
+#             db.rollback()
+#             raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
+#     else:
+#         print("Користувача з таким ID не знайдено.")
+        
+        
+async def get_all_users(db: Session) -> List[User]:
+    users = db.query(User).all()
+    return users
+
+
+async def get_cars_with_user_by_car_number(db: Session, car_number: str):
+    car = db.query(Car).filter(Car.license_plate == car_number).first()
+    if car:
+        user = db.query(User).filter(User.license_plate == car_number).first()
+        return car, user
+    else:
+        return None, None
+
+#current_user: User = None
+async def change_tariff(user_id: int, new_tariff: str, db: Session,):
+    # async with db.begin():
+    user = await repository_users.get_user_by_id(user_id=user_id, db=db)
+    # user = user.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # if current_user and current_user.role != "admin":
+    #     raise HTTPException(status_code=403, detail="Permission denied. Only admin can change tariffs.")
+    tariff = db.query(Tariff).filter(Tariff.tariff_name == new_tariff).first()
+    if not tariff:
+        raise HTTPException(status_code=404, detail="Tariff not found")
+    # if new_tariff not in ["basic", "premium", "holiday_rate"]:
+    #     raise HTTPException(status_code=400, detail="Invalid tariff provided")
+
+    user.tariff_id = tariff.id
+    db.commit()
+    db.refresh(user)
+    return {"message": "Tariff changed successfully"}

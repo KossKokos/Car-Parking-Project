@@ -26,6 +26,10 @@ from ..services import (
     logout as service_logout,
 )
 
+# from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..repository.admin import get_cars_with_user_by_car_number
+
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 security = HTTPBearer()
@@ -409,3 +413,62 @@ async def get_profile_by_car(license_plate: str, db: Session = Depends(get_db)):
     profile = await repository_users.get_parking_info(license_plate, db)
     print(profile)
     return profile
+
+
+# @router.get("/users")
+# async def get_all_users(db: Session = Depends(get_db)):
+#     users = db.query(User).all()
+#     return users
+
+# @router.put("/users/{user_id}", dependencies=[Depends(service_logout.logout_dependency), 
+#                                 Depends(allowd_operation_by_admin)])
+# async def admin_update_user(user_id: int, new_data: dict, db: Session = Depends(get_db)):
+#     user = db.query(User).filter(User.id == user_id).first()
+#     if user:
+#         for key, value in new_data.items():
+#             setattr(user, key, value)
+#         try:
+#             db.commit()
+#             return {"message": "User information updated successfully"}
+#         except Exception as e:
+#             db.rollback()
+#             raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
+#     else:
+#         raise HTTPException(status_code=404, detail="User not found")
+    
+
+@router.get("/cars", dependencies=[Depends(service_logout.logout_dependency), 
+                                   Depends(allowd_operation_by_admin)])
+async def get_cars_user_by_car_number(car_number: str, db: Session = Depends(get_db)):
+    car, user = await get_cars_with_user_by_car_number(db, car_number)
+    if car:
+        if user:
+            return {"car": car, "user": user}
+        else:
+            return {"car": car}
+    else:
+        return {"message": "Car not found"}
+    
+    
+
+@router.get('/users', dependencies=[Depends(service_logout.logout_dependency), 
+                                    Depends(allowd_operation_by_admin)])
+async def get_all_users(db: Session = Depends(get_db)):
+    users = await repository_admin.get_all_users(db)
+    return users
+
+
+@router.patch('/change_tariff/{user_id}', dependencies=[Depends(service_logout.logout_dependency), 
+                                                        Depends(allowd_operation_by_admin)])
+async def change_user_tariff(
+    user_id: int,
+    new_tariff: str,
+    # holiday: bool = False,
+    db: Session = Depends(get_db),
+    # current_user: User = Depends(service_auth.get_current_user)
+):
+    try:
+        await repository_admin.change_tariff(user_id, new_tariff, db)
+        return {"message": "Tariff changed successfully"}
+    except HTTPException as e:
+        return e
