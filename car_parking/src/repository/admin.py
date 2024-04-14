@@ -13,10 +13,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
 from typing import List, Optional
-from ..database import db
 from ..repository import users as repository_users
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
 
 async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
@@ -149,15 +146,6 @@ async def get_user_by_email(email: str, db: Session) -> Optional[User]:
 async def get_all_users(db: Session) -> List[User]:
     users = db.query(User).all()
     return users
-
-
-async def get_cars_with_user_by_car_number(db: Session, car_number: str):
-    car = db.query(Car).filter(Car.license_plate == car_number).first()
-    if car:
-        user = db.query(User).filter(User.license_plate == car_number).first()
-        return car, user
-    else:
-        return None, None
 
 #current_user: User = None
 async def change_tariff(user_id: int, new_tariff: str, db: Session,):

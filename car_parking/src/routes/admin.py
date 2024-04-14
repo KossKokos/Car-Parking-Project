@@ -26,10 +26,6 @@ from ..services import (
     logout as service_logout,
 )
 
-# from sqlalchemy.ext.asyncio import AsyncSession
-
-from ..repository.admin import get_cars_with_user_by_car_number
-
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 security = HTTPBearer()
@@ -435,20 +431,6 @@ async def get_profile_by_car(license_plate: str, db: Session = Depends(get_db)):
 #             raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
 #     else:
 #         raise HTTPException(status_code=404, detail="User not found")
-    
-
-@router.get("/cars", dependencies=[Depends(service_logout.logout_dependency), 
-                                   Depends(allowd_operation_by_admin)])
-async def get_cars_user_by_car_number(car_number: str, db: Session = Depends(get_db)):
-    car, user = await get_cars_with_user_by_car_number(db, car_number)
-    if car:
-        if user:
-            return {"car": car, "user": user}
-        else:
-            return {"car": car}
-    else:
-        return {"message": "Car not found"}
-    
     
 
 @router.get('/users', dependencies=[Depends(service_logout.logout_dependency), 
