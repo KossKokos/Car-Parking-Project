@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 #from src.database.models import User, Image
-from ..database.models import User, Car
+from ..database.models import Tariff, User, Car
 from ..schemas.users import UserModel, UserRoleUpdate
 
 from typing import Type
@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from typing import List, Optional
 from ..database import db
-
+from ..repository import users as repository_users
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -118,30 +118,30 @@ async def get_all_users(db: Session) -> List[User]:
 
 
 async def get_cars_with_user_by_car_number(db: Session, car_number: str):
-    car = db.query(Car).filter(Car.number == car_number).first()
+    car = db.query(Car).filter(Car.license_plate == car_number).first()
     if car:
-        user = db.query(User).filter(User.car_id == car.id).first()
+        user = db.query(User).filter(User.license_plate == car_number).first()
         return car, user
     else:
         return None, None
 
+#current_user: User = None
+async def change_tariff(user_id: int, new_tariff: str, db: Session,):
+    # async with db.begin():
+    user = await repository_users.get_user_by_id(user_id=user_id, db=db)
+    # user = user.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-async def change_tariff(user_id: int, new_tariff: str, db: AsyncSession, holiday: bool = False, current_user: User = None):
-    async with db.begin():
-        user = await db.execute(select(User).filter(User.id == user_id))
-        user = user.scalar_one_or_none()
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+    # if current_user and current_user.role != "admin":
+    #     raise HTTPException(status_code=403, detail="Permission denied. Only admin can change tariffs.")
+    tariff = db.query(Tariff).filter(Tariff.tariff_name == new_tariff).first()
+    if not tariff:
+        raise HTTPException(status_code=404, detail="Tariff not found")
+    # if new_tariff not in ["basic", "premium", "holiday_rate"]:
+    #     raise HTTPException(status_code=400, detail="Invalid tariff provided")
 
-        if current_user and current_user.role != "admin":
-            raise HTTPException(status_code=403, detail="Permission denied. Only admin can change tariffs.")
-
-        if new_tariff not in ["basic", "premium", "holiday_rate"]:
-            raise HTTPException(status_code=400, detail="Invalid tariff provided")
-
-        if holiday:
-            user.holiday_tariff = new_tariff
-        else:
-            user.tariff = new_tariff
-
+    user.tariff_id = tariff.id
+    db.commit()
+    db.refresh(user)
     return {"message": "Tariff changed successfully"}

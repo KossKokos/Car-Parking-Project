@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from ..database.db import get_db, get_async_session
+from ..database.db import get_db
 from ..database.models import User
 from ..repository import (
     users as repository_users, 
     admin as repository_admin, 
     cars as repository_cars
 )
-from ..services.auth import service_auth, get_current_user
+from ..services.auth import service_auth
 from ..schemas.users import UserResponse, UserRoleUpdate
 from ..schemas.cars import CarResponse
 from ..services import (
@@ -17,9 +17,8 @@ from ..services import (
     logout as service_logout,
 )
 
-from sqlalchemy.ext.asyncio import AsyncSession
+# from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..database import db
 from ..repository.admin import get_cars_with_user_by_car_number
 
 
@@ -290,12 +289,13 @@ async def unban_car(license_plate:str,
     return car_banned_response
 
 
-@router.get("/admin/users")
-def get_all_users(db: Session = Depends(get_db)):
-    users = db.query(User).all()
-    return users
+# @router.get("/users")
+# async def get_all_users(db: Session = Depends(get_db)):
+#     users = db.query(User).all()
+#     return users
 
-@router.put("/admin/users/{user_id}")
+@router.put("/users/{user_id}", dependencies=[Depends(service_logout.logout_dependency), 
+                                Depends(allowd_operation_by_admin)])
 async def admin_update_user(user_id: int, new_data: dict, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if user:
@@ -310,9 +310,11 @@ async def admin_update_user(user_id: int, new_data: dict, db: Session = Depends(
     else:
         raise HTTPException(status_code=404, detail="User not found")
     
-@router.get("/admin/cars")
-def get_cars_with_user_by_car_number(car_number: str, db: Session = Depends(get_db)):
-    car, user = get_cars_with_user_by_car_number(db, car_number)
+
+@router.get("/cars", dependencies=[Depends(service_logout.logout_dependency), 
+                                   Depends(allowd_operation_by_admin)])
+async def get_cars_user_by_car_number(car_number: str, db: Session = Depends(get_db)):
+    car, user = await get_cars_with_user_by_car_number(db, car_number)
     if car:
         if user:
             return {"car": car, "user": user}
@@ -323,22 +325,24 @@ def get_cars_with_user_by_car_number(car_number: str, db: Session = Depends(get_
     
     
 
-@router.get('/users')
-async def get_all_users(db: AsyncSession = Depends(get_async_session)):
+@router.get('/users', dependencies=[Depends(service_logout.logout_dependency), 
+                                    Depends(allowd_operation_by_admin)])
+async def get_all_users(db: Session = Depends(get_db)):
     users = await repository_admin.get_all_users(db)
     return users
 
 
-@router.patch('/change_tariff/{user_id}')
+@router.patch('/change_tariff/{user_id}', dependencies=[Depends(service_logout.logout_dependency), 
+                                                        Depends(allowd_operation_by_admin)])
 async def change_user_tariff(
     user_id: int,
     new_tariff: str,
-    holiday: bool = False,
-    db: AsyncSession = Depends(get_async_session),
-    current_user: User = Depends(get_current_user)
+    # holiday: bool = False,
+    db: Session = Depends(get_db),
+    # current_user: User = Depends(service_auth.get_current_user)
 ):
     try:
-        await repository_admin.change_tariff(user_id, new_tariff, db, holiday, current_user)
+        await repository_admin.change_tariff(user_id, new_tariff, db)
         return {"message": "Tariff changed successfully"}
     except HTTPException as e:
         return e
