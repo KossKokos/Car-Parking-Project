@@ -4,8 +4,8 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from fastapi_mail.errors import ConnectionErrors
 from pydantic import EmailStr
 
-from ..services.auth import service_auth
-from ..conf.config import settings
+from car_parking.src.services.auth import service_auth
+from car_parking.src.conf.config import settings
 
 conf = ConnectionConfig(
     MAIL_USERNAME=settings.mail_username,
@@ -18,31 +18,22 @@ conf = ConnectionConfig(
     MAIL_SSL_TLS=True,
     USE_CREDENTIALS=True,
     VALIDATE_CERTS=True,
-    TEMPLATE_FOLDER=Path(__file__).parent.parent / 'templates',
+    TEMPLATE_FOLDER=Path(__file__).parent.parent / "templates",
 )
 
 
 async def send_email(email: EmailStr, username: str, host: str) -> None:
-    """
-    The send_email function sends an email to the user with a link to confirm their email address.
-
-        The function takes in three arguments:
-            email: the user's email address, which is used as a unique identifier for them.
-            username: the username of the user who is registering for an account. 
-            host: this is where we are hosting our application, which will be used as part of our URL when sending out emails.
-    
-    :param email: EmailStr: Validate the email address
-    :param username: str: Pass the username to the email template
-    :param host: str: Pass the hostname of the server to be used in the link for email verification
-    :return: None
-    """
     try:
         token_verification = await service_auth.create_email_token({"sub": email})
         message = MessageSchema(
             subject="Confirm your email ",
             recipients=[email],
-            template_body={"host": host, "username": username, "token": token_verification},
-            subtype=MessageType.html
+            template_body={
+                "host": host,
+                "username": username,
+                "token": token_verification,
+            },
+            subtype=MessageType.html,
         )
 
         fm = FastMail(conf)
@@ -52,25 +43,17 @@ async def send_email(email: EmailStr, username: str, host: str) -> None:
 
 
 async def send_reset_password_email(email: EmailStr, username: str, host: str) -> None:
-    """
-    The send_reset_password_email function sends an email to the user with a link to reset their password.
-        Args:
-            email (str): The user's email address.
-            username (str): The user's username.
-            host (str): The hostname of the server where this function is being called from, e.g., &quot;localhost&quot; or &quot;127.0.0.&quot; 
-    
-    :param email: EmailStr: Specify the email address of the user who is requesting a password reset
-    :param username: str: Pass the username to the template, so it can be displayed in the email
-    :param host: str: Pass the hostname of the server to the email template
-    :return: None
-    """
     try:
         token_verification = await service_auth.create_email_token({"sub": email})
         message = MessageSchema(
             subject="Reset password ",
             recipients=[email],
-            template_body={"host": host, "username": username, "token": token_verification},
-            subtype=MessageType.html
+            template_body={
+                "host": host,
+                "username": username,
+                "token": token_verification,
+            },
+            subtype=MessageType.html,
         )
 
         fm = FastMail(conf)
@@ -78,27 +61,31 @@ async def send_reset_password_email(email: EmailStr, username: str, host: str) -
     except ConnectionErrors as err:
         print(err)
 
-async def praking_enter_message(email: EmailStr, 
-                                username: str, 
-                                license_plate:str, 
-                                enter_time, 
-                                tariff_name, 
-                                tariff_value, 
-                                host: str) -> None:
 
+async def praking_enter_message(
+    email: EmailStr,
+    username: str,
+    license_plate: str,
+    enter_time,
+    tariff_name,
+    tariff_value,
+    host: str,
+) -> None:
     try:
         token_verification = await service_auth.create_email_token({"sub": email})
         message = MessageSchema(
             subject="Parking place info",
             recipients=[email],
-            template_body={"host": host, 
-                           "username": username,
-                           "license_plate": license_plate, 
-                           "enter_time" :enter_time, 
-                           "tariff_name": tariff_name,
-                           "tariff_value": tariff_value, 
-                           "token": token_verification},
-            subtype=MessageType.html
+            template_body={
+                "host": host,
+                "username": username,
+                "license_plate": license_plate,
+                "enter_time": enter_time,
+                "tariff_name": tariff_name,
+                "tariff_value": tariff_value,
+                "token": token_verification,
+            },
+            subtype=MessageType.html,
         )
 
         fm = FastMail(conf)
@@ -106,13 +93,14 @@ async def praking_enter_message(email: EmailStr,
     except ConnectionErrors as err:
         print(err)
 
-#original code
-# async def praking_exit_message(email: EmailStr, 
-#                                username: str, 
-#                                license_plate:str, 
-#                                enter_time, 
-#                                tariff_name, 
-#                                tariff_value, 
+
+# original code
+# async def praking_exit_message(email: EmailStr,
+#                                username: str,
+#                                license_plate:str,
+#                                enter_time,
+#                                tariff_name,
+#                                tariff_value,
 #                                host: str) -> None:
 
 #     try:
@@ -120,12 +108,12 @@ async def praking_enter_message(email: EmailStr,
 #         message = MessageSchema(
 #             subject="Invoice for payment",
 #             recipients=[email],
-#             template_body={"host": host, 
+#             template_body={"host": host,
 #                            "username": username,
-#                            "license_plate": license_plate, 
-#                            "enter_time" :enter_time, 
+#                            "license_plate": license_plate,
+#                            "enter_time" :enter_time,
 #                            "tariff_name": tariff_name,
-#                            "tariff_value": tariff_value, 
+#                            "tariff_value": tariff_value,
 #                            "token": token_verification},
 #             subtype=MessageType.html
 #         )
@@ -135,36 +123,40 @@ async def praking_enter_message(email: EmailStr,
 #     except ConnectionErrors as err:
 #         print(err)
 
-# second version
-async def praking_exit_message(email: EmailStr, 
-                               username: str, 
-                               license_plate:str,
-                               parking_place_id, 
-                               enter_time,
-                               departure_time, 
-                               tariff_name, 
-                               tariff_value,
-                               duration,
-                               amount_paid, 
-                               host: str) -> None:
 
+# second version
+async def praking_exit_message(
+    email: EmailStr,
+    username: str,
+    license_plate: str,
+    parking_place_id,
+    enter_time,
+    departure_time,
+    tariff_name,
+    tariff_value,
+    duration,
+    amount_paid,
+    host: str,
+) -> None:
     try:
         token_verification = await service_auth.create_email_token({"sub": email})
         message = MessageSchema(
             subject="Invoice for payment",
             recipients=[email],
-            template_body={"host": host, 
-                           "username": username,
-                           "license_plate": license_plate,
-                           "parking_place_id": parking_place_id,
-                           "enter_time" :enter_time,
-                           "departure_time": departure_time, 
-                           "tariff_name": tariff_name,
-                           "tariff_value": tariff_value,
-                           "duration": duration,
-                           "amount_paid": amount_paid,
-                           "token": token_verification},
-            subtype=MessageType.html
+            template_body={
+                "host": host,
+                "username": username,
+                "license_plate": license_plate,
+                "parking_place_id": parking_place_id,
+                "enter_time": enter_time,
+                "departure_time": departure_time,
+                "tariff_name": tariff_name,
+                "tariff_value": tariff_value,
+                "duration": duration,
+                "amount_paid": amount_paid,
+                "token": token_verification,
+            },
+            subtype=MessageType.html,
         )
 
         fm = FastMail(conf)

@@ -3,25 +3,23 @@ from fastapi import (
     Depends,
     HTTPException,
     status,
-    UploadFile,
-    File,
     Security,
 )
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from ..database.db import get_db
-from ..database.models import User
+from car_parking.src.database.db import get_db
+from car_parking.src.database.models import User
 from car_parking.src.repository import (
     users as repository_users,
     admin as repository_admin,
     car as repository_cars,
 )
-from ..schemas.parking import ParkingInfo
-from ..services.auth import service_auth
-from ..schemas.users import UserResponse, UserRoleUpdate, UserByCarResponse
-from ..schemas.cars import CarResponse
-from ..services import (
+from car_parking.src.schemas.parking import ParkingInfo
+from car_parking.src.services.auth import service_auth
+from car_parking.src.schemas.users import UserResponse, UserRoleUpdate, UserByCarResponse
+
+from car_parking.src.services import (
     roles as service_roles,
     logout as service_logout,
 )
@@ -46,13 +44,6 @@ async def get_all_usernames(
     current_user: User = Depends(service_auth.get_current_user),
     db: Session = Depends(get_db),
 ):
-    """
-    The get_all_usernames function returns a list of all usernames in the database.
-
-    :param current_user: User: Get the current user from the database
-    :param db: Session: Get the database session from the dependency injection
-    :return: A list of all the usernames in the database
-    """
     usernames = await repository_admin.return_all_users(db)
     return usernames
 
@@ -72,19 +63,6 @@ async def ban_user(
     current_user: User = Depends(service_auth.get_current_user),
     db: Session = Depends(get_db),
 ):
-    """
-    The update_banned_status function updates the banned status of a user.
-        Only admin can ban the user.
-        User cannot change own banned status.
-        Superadmin status cannot be changed.
-
-    :param user_id:str: Get the user_id from the url
-    :param body: BannedUserUpdate: Get the banned status from the request body
-    :param current_user: User: Get the user who is currently logged in
-    :param db: Session: Access the database
-    :return: The user object
-    """
-
     user = await repository_users.get_user_by_id(user_id, db)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -118,19 +96,6 @@ async def unban_user(
     current_user: User = Depends(service_auth.get_current_user),
     db: Session = Depends(get_db),
 ):
-    """
-    The update_banned_status function updates the banned status of a user.
-        Only admin can ban the user.
-        User cannot change own banned status.
-        Superadmin status cannot be changed.
-
-    :param user_id:str: Get the user_id from the url
-    :param body: BannedUserUpdate: Get the banned status from the request body
-    :param current_user: User: Get the user who is currently logged in
-    :param db: Session: Access the database
-    :return: The user object
-    """
-
     user = await repository_users.get_user_by_id(user_id, db)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -162,14 +127,6 @@ async def delete_user(
     current_user: User = Depends(service_auth.get_current_user),
     db: Session = Depends(get_db),
 ):
-    """
-        The delete_user function allows an admin to delete a user.
-
-    :param user_id: int: ID of the user to be deleted
-    :param current_user: User: Get the current user from the database
-    :param db: Session: Database session
-    :return: dict
-    """
     user = await repository_users.get_user_by_id(user_id, db)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -210,16 +167,6 @@ async def change_user_role(
     current_user: User = Depends(service_auth.get_current_user),
     db: Session = Depends(get_db),
 ):
-    """
-    The change_user_role function allows an admin to change the role of a user.
-
-    :param user_id: int: Fetch the user by id from the database
-    :param body: UserRoleUpdate: Get the new role from the request body
-    :param current_user: User: Get the current user from the database
-    :param db: Session: Pass the database session to the function
-    :return: A user object with udated role
-    :doc-author: Trelent
-    """
     if current_user.role != "admin":
         raise HTTPException(
             status_code=403, detail="Permission denied. Only admin can change roles."
@@ -247,30 +194,6 @@ async def change_user_role(
         return user
     else:
         raise HTTPException(status_code=400, detail="Invalid role provided")
-
-
-##########
-# option with car response
-# @router.patch('/ban_car/{license_plate}',
-#                         response_model=CarResponse,
-#                         status_code=status.HTTP_200_OK,
-#                         dependencies=[Depends(service_logout.logout_dependency),
-#                                       Depends(allowd_operation_by_admin)],
-#                         )
-# async def ban_car(license_plate:str,
-#                                 credentials: HTTPAuthorizationCredentials = Security(security),
-#                                 current_user: User = Depends(service_auth.get_current_user),
-#                                 db: Session = Depends(get_db)):
-
-
-#     car = await repository_cars.get_car_by_license_plate(license_plate, db)
-#     if not car:
-#         raise HTTPException(status_code=404, detail="Car not found")
-#     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
-#     if user and user.id != 1:
-#         await repository_users.ban_user(user, db)
-#     await repository_cars.update_car_banned_status(car, db)
-#     return car
 
 
 @router.patch(
@@ -365,46 +288,49 @@ async def unban_car(
 
 @router.get(
     "/search_user/{license_plate}",
-    # response_model=CarResponse | UserByCarResponse,
+    response_model=UserByCarResponse | str,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(service_logout.logout_dependency),
-                  Depends(allowd_operation_by_admin)],
+    dependencies=[
+        Depends(service_logout.logout_dependency),
+        Depends(allowd_operation_by_admin),
+    ],
 )
-async def search_user_by_license_plate(license_plate: str, db: Session = Depends(get_db)):
+async def search_user_by_license_plate(
+    license_plate: str, db: Session = Depends(get_db)
+):
     license_plate = license_plate.upper()
-    car = await repository_cars.get_car_by_license_plate(license_plate, db)
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user:
         return user
-    return car
+    return f"The user with license plate {license_plate} is not registered."
 
 
 @router.get(
-        "/create_csv/{license_plate}/{filename}",
-        status_code=status.HTTP_200_OK,
-        # dependencies=[
-        #     Depends(service_logout.logout_dependency),
-        #     Depends(allowd_operation_by_admin),
-        # ],
-    )
+    "/create_csv/{license_plate}/{filename}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(service_logout.logout_dependency),
+        Depends(allowd_operation_by_admin),
+    ],
+)
 async def create_csv_file(
-        license_plate: str,
-        filename: str,
-        db: Session = Depends(get_db),
+    license_plate: str,
+    filename: str,
+    db: Session = Depends(get_db),
 ):
     create_file = await repository_admin.create_parking_csv(license_plate, filename, db)
     return create_file
 
 
 @router.get(
-        "/get_profile/{license_plate}",
-        response_model=ParkingInfo,
-        status_code=status.HTTP_200_OK,
-        # dependencies=[
-        #     Depends(service_logout.logout_dependency),
-        #     Depends(allowd_operation_by_admin),
-        # ],
-    )
+    "/get_profile/{license_plate}",
+    response_model=ParkingInfo | str,
+    status_code=status.HTTP_200_OK,
+    dependencies=[
+        Depends(service_logout.logout_dependency),
+        Depends(allowd_operation_by_admin),
+    ],
+)
 async def get_profile_by_car(license_plate: str, db: Session = Depends(get_db)):
     profile = await repository_users.get_parking_info(license_plate, db)
     print(profile)
@@ -416,7 +342,7 @@ async def get_profile_by_car(license_plate: str, db: Session = Depends(get_db)):
 #     users = db.query(User).all()
 #     return users
 
-# @router.put("/users/{user_id}", dependencies=[Depends(service_logout.logout_dependency), 
+# @router.put("/users/{user_id}", dependencies=[Depends(service_logout.logout_dependency),
 #                                 Depends(allowd_operation_by_admin)])
 # async def admin_update_user(user_id: int, new_data: dict, db: Session = Depends(get_db)):
 #     user = db.query(User).filter(User.id == user_id).first()
@@ -431,26 +357,50 @@ async def get_profile_by_car(license_plate: str, db: Session = Depends(get_db)):
 #             raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
 #     else:
 #         raise HTTPException(status_code=404, detail="User not found")
-    
 
-@router.get('/users', dependencies=[Depends(service_logout.logout_dependency), 
-                                    Depends(allowd_operation_by_admin)])
+
+@router.get(
+    "/users",
+    dependencies=[
+        Depends(service_logout.logout_dependency),
+        Depends(allowd_operation_by_admin),
+    ],
+)
 async def get_all_users(db: Session = Depends(get_db)):
     users = await repository_admin.get_all_users(db)
     return users
 
 
-@router.patch('/change_tariff/{user_id}', dependencies=[Depends(service_logout.logout_dependency), 
-                                                        Depends(allowd_operation_by_admin)])
+@router.patch(
+    "/change_tariff/{user_id}",
+    dependencies=[
+        Depends(service_logout.logout_dependency),
+        Depends(allowd_operation_by_admin),
+    ],
+)
 async def change_user_tariff(
     user_id: int,
     new_tariff: str,
-    # holiday: bool = False,
     db: Session = Depends(get_db),
-    # current_user: User = Depends(service_auth.get_current_user)
 ):
     try:
         await repository_admin.change_tariff(user_id, new_tariff, db)
         return {"message": "Tariff changed successfully"}
     except HTTPException as e:
         return e
+
+
+@router.post(
+    "/create_tariff/{tariff_name}/{tariff_value}",
+    dependencies=[
+        Depends(service_logout.logout_dependency),
+        Depends(allowd_operation_by_admin),
+    ],
+)
+async def create_tariff(
+    tariff_name: str,
+    tariff_value: int,
+    db: Session = Depends(get_db),
+):
+    new_tariff = await repository_admin.add_tariff(tariff_name, tariff_value, db)
+    return new_tariff
