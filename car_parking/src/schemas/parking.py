@@ -29,7 +29,3 @@ class CurrentParking(BaseModel):
 class ParkingSchema(BaseModel):
     info: ParkingResponse
     status: str
-
-class ParkingConfirmed(BaseModel):
-    info: ParkingSchema
-    status: str

@@ -33,6 +33,7 @@ async def change_parking_status_not_authorised(parking_place_id: int, db: Sessio
     parking_place.status = True
     parking_place.departure_time = departure_time
     parking_place.duration = duration
+    count = db.query(Parking_count).first()
     if user:
         tariff = db.query(Tariff).filter_by(id=user.tariff_id).first()
         parking_place.amount_paid = calculate_cost(duration, int(tariff.tariff_value))
@@ -47,6 +48,7 @@ async def change_parking_status_not_authorised(parking_place_id: int, db: Sessio
                                     duration=parking_place.duration,
                                     status=False),
                 status=f"The barrier is open, See you next time!")
+    count.ococcupied_quantity -= 1
     db.commit()
     return parking
 
@@ -54,7 +56,8 @@ async def change_parking_status_not_authorised(parking_place_id: int, db: Sessio
 async def change_parking_status_authorised(parking_place_id: int, db: Session):
     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
     parking_place.status = True
-    parking = ParkingSchema(info=ParkingResponse(id=parking_place.id,
+    count = db.query(Parking_count).first()
+    parking_status = ParkingSchema(info=ParkingResponse(id=parking_place.id,
                                             enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                                             departure_time=parking_place.departure_time,
                                             license_plate=parking_place.license_plate,
@@ -62,8 +65,9 @@ async def change_parking_status_authorised(parking_place_id: int, db: Session):
                                             duration=parking_place.duration,
                                             status=False),
                         status=f"The barrier is open, See you next time!")
+    count.ococcupied_quantity -= 1
     db.commit()
-    return parking
+    return parking_status
 
 
 async def calculate_invoice(parking_place_id: int, db: Session):
@@ -224,4 +228,5 @@ async def free_parking_places(date: str, db: Session):
 
 
 async def get_parking_place_by_car_license_plate(license_plate: str, db: Session) -> Parking | None:
-    return db.query(Parking).filter(Parking.license_plate==license_plate, Parking.status == False).first()
+        parking_place = db.query(Parking).filter(Parking.license_plate==license_plate, Parking.status == False).first()
+        return parking_place
