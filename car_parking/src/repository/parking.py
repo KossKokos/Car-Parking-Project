@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+import schedule
+import time
 from ..database.models import User, Parking, Car, Parking_count, Tariff
 from ..schemas.parking import ParkingResponse, ParkingSchema
 from ..repository.car import create_car
@@ -10,12 +12,14 @@ import pytz
 def calculate_datetime_difference(start_time, end_time):
     time_difference = end_time - start_time
     hours = time_difference.days * 24 + time_difference.seconds / 3600
-    return float(hours)
+    return round(hours, 2)
+    #return float(hours)
 
 
 def calculate_cost(hours, cost):
-    return hours * cost
-
+    amount_to_pay = hours * cost
+    return round(amount_to_pay, 2)
+    #return hours * cost
 
 async def create_parking_place(license_plate: str, db: Session):
     parking_place = Parking(license_plate=license_plate)
@@ -24,7 +28,7 @@ async def create_parking_place(license_plate: str, db: Session):
     db.commit()
     return parking_place
 
-#original code
+
 async def change_parking_status_not_authorised(parking_place_id: int, db: Session):
     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
     user = db.query(User).filter(User.license_plate == parking_place.license_plate).first()
@@ -230,3 +234,34 @@ async def free_parking_places(date: str, db: Session):
 async def get_parking_place_by_car_license_plate(license_plate: str, db: Session) -> Parking | None:
         parking_place = db.query(Parking).filter(Parking.license_plate==license_plate, Parking.status == False).first()
         return parking_place
+
+
+async def check_parking_max_limit(db:Session):
+    # Retrieve all parking records
+    active_parking_records = db.query(Parking).filter(Parking.status == False).all()
+    if active_parking_records:
+        for parking in active_parking_records:
+            user: User = repository_users.get_user_by_car_license_plate(parking.license_plate, db)
+            if user: #only for registered users
+                # Calculate duration
+                current_time = datetime.now()
+                duration = calculate_datetime_difference(parking.enter_time, current_time)
+                tariff = db.query(Tariff).filter_by(id=user.tariff_id).first()
+                amount_paid = calculate_cost(duration, int(tariff.tariff_value))
+
+                # Check if amount exceeds the maximum limit
+                max_limit_value = db.query(Tariff).filter(Tariff.tariff_name == "MAX_LIMIT").first()
+                if amount_paid > max_limit_value:
+                    print (f"Parking payment limit for user {user.username} is exceeded")     
+    db.close()
+
+
+# Schedule the function to run once per day
+async def schedule_check_parking(db: Session):
+    # Schedule the function to run once per day at a specific time (e.g., 00:00)
+    schedule.every().day.at("00:00").do(await check_parking_max_limit, db)
+
+    # Run the scheduler loop
+    while True:
+        schedule.run_pending()
+        time.sleep(1)  # Sleep for 1 second to avoid high CPU usage

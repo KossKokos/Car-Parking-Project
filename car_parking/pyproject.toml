@@ -41,6 +41,7 @@ qrcode = {version = "7.4.2", extras = ["pil"]}
 psycopg2-binary = "2.9.9"
 psycopg2 = "2.9.5"
 pytz = "^2024.1"
+schedule = "^1.2.1"
 
 
 [tool.poetry.group.dev.dependencies]
