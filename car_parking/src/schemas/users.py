@@ -11,11 +11,23 @@ class UserModel(BaseModel):
     license_plate: str
     # tariff_id: int = 2
 
-      
+#original code     
+# class UserResponse(BaseModel):
+#     username: str = 'username'
+#     email: EmailStr = 'example@gmail.com'
+#     license_plate: str
+
 class UserResponse(BaseModel):
+    id: int = 1
     username: str = 'username'
     email: EmailStr = 'example@gmail.com'
-    license_plate: str
+    password: str = 'password'
+    role: str = "role"
+    banned: Optional[bool] = None
+
+
+    class Config:
+        orm_mode = True
 
 
 class UserParkingResponse(BaseModel):
@@ -24,7 +36,6 @@ class UserParkingResponse(BaseModel):
 
     class Config:
         orm_mode = True
-
 
 
 class ChangePassword(BaseModel):

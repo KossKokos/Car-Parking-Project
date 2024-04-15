@@ -151,14 +151,14 @@ async def get_user_by_car_license_plate(license_plate: str, db: Session) -> User
     return db.query(User).filter_by(license_plate=license_plate).first()
 
 
-async def calculate_amount_cost(list_of_parking: list[[Parking]]):
+async def calculate_amount_cost(list_of_parking: list[list[Parking]]):
     total_cost = 0
     for park in list_of_parking:
         total_cost += park.amount_paid
     return total_cost
 
 
-async def calculate_amount_duration(list_of_parking: list[[Parking]]):
+async def calculate_amount_duration(list_of_parking: list[list[Parking]]):
     total_duration = 0
     for park in list_of_parking:
         total_duration += park.duration

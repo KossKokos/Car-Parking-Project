@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer,OAuth2PasswordRequestForm, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
-from ..database.db import get_db
-from ..database.models import User, Tariff
+from car_parking.src.database.db import get_db
+from car_parking.src.database.models import User, Tariff
 # from ..repository import users as repository_users
 # from ..repository import parking as repository_parking
 # from ..repository import tariff as repository_tariff

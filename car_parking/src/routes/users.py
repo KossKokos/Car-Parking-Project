@@ -17,7 +17,7 @@ from ..services import (
 router = APIRouter(prefix='/users', tags=['users'])
 security = HTTPBearer()
 
-allowd_operation = service_roles.RoleRights(["user", "moderator", "admin"])
+allowd_operation = service_roles.RoleRights(["user", "admin"])
 allowd_operation_by_admin = service_roles.RoleRights(["admin"])
 
 
