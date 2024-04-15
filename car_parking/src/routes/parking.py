@@ -63,7 +63,6 @@ async def enter_parking(license_plate,
     return parking_place
 
 
-#exit code second version
 @router.post('/exit_parking/{license_plate}',
              response_model=ParkingSchema | str,
              status_code=status.HTTP_200_OK,
@@ -96,7 +95,8 @@ async def exit_parking(license_plate,
     return parking_info
 
 
-@router.get('/confirm_payment/{parking_place_id}', 
+@router.get('/confirm_payment/{parking_place_id}',
+            response_model=ParkingSchema | str, 
             status_code=status.HTTP_202_ACCEPTED)
 async def confirm_payment(parking_place_id: str, db: Session = Depends(get_db)):
     await repository_parking.change_parking_status_authorised(parking_place_id, db)
@@ -104,10 +104,6 @@ async def confirm_payment(parking_place_id: str, db: Session = Depends(get_db)):
 
 
 @router.get('/free_place/{date}',
-            #  dependencies=[Depends(service_logout.logout_dependency),
-            #                Depends(allowd_operation),
-            #                Depends(service_banned.banned_dependency)],
-            #  response_model=ParkingSchema | str,
              status_code=status.HTTP_200_OK,
              )
 async def occupied_places(date: str, db: Session = Depends(get_db)):

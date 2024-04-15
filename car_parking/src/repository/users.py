@@ -174,7 +174,8 @@ async def get_parking_info(license_plate: str, db: Session):
     total_parking_time = await calculate_amount_duration(parking_info)
     parking_history = ParkingInfo(user=user.username if user else "Unregister user", total_payment_amount=total_payment_amount, total_parking_time=total_parking_time, parking_info=[])
     for parking in parking_info:
-        parking_history.parking_info.append(ParkingResponse(enter_time=parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
+        parking_history.parking_info.append(ParkingResponse(id=parking.id,
+                                                            enter_time=parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                                                             departure_time=parking.departure_time.strftime("%Y-%m-%d %H:%M:%S"),
                                                             license_plate=parking.license_plate,
                                                             amount_paid=parking.amount_paid,

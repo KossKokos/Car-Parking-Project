@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, EmailStr
 
 
 class ParkingResponse(BaseModel):
+    id: int
     enter_time: datetime
     departure_time: datetime | None
     license_plate: str
@@ -27,4 +28,8 @@ class CurrentParking(BaseModel):
 
 class ParkingSchema(BaseModel):
     info: ParkingResponse
+    status: str
+
+class ParkingConfirmed(BaseModel):
+    info: ParkingSchema
     status: str
