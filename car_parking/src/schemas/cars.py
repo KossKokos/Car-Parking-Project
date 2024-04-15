@@ -1,10 +1,6 @@
-from datetime import datetime
-from typing import List, Optional
+from pydantic import BaseModel
 
-from pydantic import BaseModel, Field
-from fastapi import UploadFile
-
-from ..database.models import Car
+from car_parking.src.database.models import Car
 
 
 class CarResponse(BaseModel):
@@ -23,9 +19,5 @@ class CarResponse(BaseModel):
     class Config:
         orm_mode = True
         schema_extra = {
-            "example": {
-                "id": 1,
-                "license_plate": "xx0000yy",
-                "banned": "False"
-            }
+            "example": {"id": 1, "license_plate": "xx0000yy", "banned": "False"}
         }

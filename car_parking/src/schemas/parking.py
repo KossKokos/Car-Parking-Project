@@ -1,6 +1,6 @@
-from typing import Optional, List
+from typing import List
 from datetime import datetime
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel
 
 
 class ParkingResponse(BaseModel):
