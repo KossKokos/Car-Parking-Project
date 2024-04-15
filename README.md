@@ -5,7 +5,9 @@
 
 
 
-![Logo](https://drive.google.com/file/d/1Uoo6iezQR4HW6AsYs3QlIG604aL-eOXu/view?usp=sharing)
+![Logo](https://github.com/KossKokos/Car-Parking-Project/blob/main/main.py)
+![Logo](https://github.com/KossKokos/Car-Parking-Project/blob/dev/car_parking/Logo/logo.jpeg)
+![Logo](https://github.com/KossKokos/Car-Parking-Project/blob/max_limit_2/car_parking/Logo/logo.jpeg)
 
 
 
@@ -104,8 +106,8 @@ http://localhost:8000/docs
 Цей проект підпадає під дію MIT лицензіЇ.
 
 ## Учасники
-- [Kostiantyn Pereimybida](https://github.com/KossKokos)
-- [Dmytro Kruhlov](https://github.com/Dmytro-Kruhlov)
-- [Michael Ivanov](https://github.com/MikeIV2007)
-- [Natalia Semeniuk](https://github.com/N1a2t3a)
-- [Vladyslav Kyryllov](https://github.com/Vlad96Kir7)
+- [Kostiantyn Pereimybida / Team lead](https://github.com/KossKokos)
+- [Dmytro Kruhlov / Scrum Master](https://github.com/Dmytro-Kruhlov)
+- [Michael Ivanov / Developer](https://github.com/MikeIV2007)
+- [Natalia Semeniuk / Developer](https://github.com/N1a2t3a)
+- [Vladyslav Kyryllov / Developer](https://github.com/Vlad96Kir7)
