@@ -1,20 +1,24 @@
 from sqlalchemy.orm import Session
+import schedule
+import time
+from datetime import datetime
+import pytz
+
 from car_parking.src.database.models import User, Parking, Car, Parking_count, Tariff
 from car_parking.src.schemas.parking import ParkingResponse, ParkingSchema
 from car_parking.src.repository.car import create_car
 from car_parking.src.repository import users as repository_users
-from datetime import datetime
-import pytz
 
 
 def calculate_datetime_difference(start_time, end_time):
     time_difference = end_time - start_time
     hours = time_difference.days * 24 + time_difference.seconds / 3600
-    return float(hours)
+    return round(hours, 2)
 
 
 def calculate_cost(hours, cost):
-    return hours * cost
+    amount_to_pay = hours * cost
+    return round(amount_to_pay, 2)
 
 
 async def create_parking_place(license_plate: str, db: Session):
@@ -27,29 +31,49 @@ async def create_parking_place(license_plate: str, db: Session):
 
 async def change_parking_status_not_authorised(parking_place_id: int, db: Session):
     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
-    user = (
-        db.query(User).filter(User.license_plate == parking_place.license_plate).first()
-    )
-    departure_time = datetime.now(pytz.timezone("Europe/Kiev"))
+    user = db.query(User).filter(User.license_plate == parking_place.license_plate).first()
+    departure_time = datetime.now(pytz.timezone('Europe/Kiev'))
     duration = calculate_datetime_difference(parking_place.enter_time, departure_time)
     parking_place.status = True
     parking_place.departure_time = departure_time
     parking_place.duration = duration
+    count = db.query(Parking_count).first()
     if user:
         tariff = db.query(Tariff).filter_by(id=user.tariff_id).first()
         parking_place.amount_paid = calculate_cost(duration, int(tariff.tariff_value))
     else:
         tariff = db.query(Tariff).filter_by(id=1).first()
         parking_place.amount_paid = calculate_cost(duration, int(tariff.tariff_value))
+    parking = ParkingSchema(info=ParkingResponse(
+                                    id=parking_place.id,
+                                    enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
+                                    departure_time=parking_place.departure_time,
+                                    license_plate=parking_place.license_plate,
+                                    amount_paid=parking_place.amount_paid,
+                                    duration=parking_place.duration,
+                                    status=False),
+                status=f"The barrier is open, See you next time!")
+    count.ococcupied_quantity -= 1
     db.commit()
-    return parking_place
+    return parking
 
 
 async def change_parking_status_authorised(parking_place_id: int, db: Session):
     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
     parking_place.status = True
+    count = db.query(Parking_count).first()
+    parking_status = ParkingSchema(info=ParkingResponse(
+                                            id=parking_place.id,
+                                            enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
+                                            departure_time=parking_place.departure_time,
+                                            license_plate=parking_place.license_plate,
+                                            amount_paid=parking_place.amount_paid,
+                                            duration=parking_place.duration,
+                                            status=False),
+                        status=f"The barrier is open, See you next time!")
+    count.ococcupied_quantity -= 1
     db.commit()
-    return parking_place
+    return parking_status
 
 
 async def calculate_invoice(parking_place_id: int, db: Session):
@@ -90,6 +114,7 @@ async def entry_to_the_parking(license_plate: str, db: Session):
             parking_place = await create_parking_place(license_plate, db)
             parking = ParkingSchema(
                 info=ParkingResponse(
+                    id=parking_place.id,
                     enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                     departure_time=parking_place.departure_time,
                     license_plate=parking_place.license_plate,
@@ -105,6 +130,7 @@ async def entry_to_the_parking(license_plate: str, db: Session):
 
         parking = ParkingSchema(
             info=ParkingResponse(
+                id=parking_place.id,
                 enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                 departure_time=parking_place.departure_time,
                 license_plate=parking_place.license_plate,
@@ -120,6 +146,7 @@ async def entry_to_the_parking(license_plate: str, db: Session):
             parking_place = await create_parking_place(license_plate, db)
             parking = ParkingSchema(
                 info=ParkingResponse(
+                    id=parking_place.id,
                     enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                     departure_time=parking_place.departure_time,
                     license_plate=parking_place.license_plate,
@@ -135,6 +162,7 @@ async def entry_to_the_parking(license_plate: str, db: Session):
 
         parking = ParkingSchema(
             info=ParkingResponse(
+                id=parking_place.id,
                 enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                 departure_time=parking_place.departure_time,
                 license_plate=parking_place.license_plate,
@@ -164,10 +192,9 @@ async def exit_from_the_parking(license_plate: str, db: Session):
             parking_place.duration = duration
             parking = ParkingSchema(
                 info=ParkingResponse(
+                    id=parking_place.id,
                     enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
-                    departure_time=parking_place.departure_time.strftime(
-                        "%Y-%m-%d %H:%M:%S"
-                    ),
+                    departure_time=parking_place.departure_time.strftime("%Y-%m-%d %H:%M:%S"),
                     license_plate=parking_place.license_plate,
                     amount_paid=parking_place.amount_paid,
                     duration=parking_place.duration,
@@ -188,10 +215,9 @@ async def exit_from_the_parking(license_plate: str, db: Session):
             parking_place = await calculate_invoice(parking_place.id, db)
             parking = ParkingSchema(
                 info=ParkingResponse(
+                    id=parking_place.id,
                     enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
-                    departure_time=parking_place.departure_time.strftime(
-                        "%Y-%m-%d %H:%M:%S"
-                    ),
+                    departure_time=parking_place.departure_time.strftime("%Y-%m-%d %H:%M:%S"),
                     license_plate=parking_place.license_plate,
                     amount_paid=parking_place.amount_paid,
                     duration=parking_place.duration,
@@ -204,27 +230,16 @@ async def exit_from_the_parking(license_plate: str, db: Session):
 
 
 async def seed_parking_count(db: Session):
-    # Check if the Tariff table is empty
     if db.query(Parking_count).count() == 0:
-        # Define data for three tariffs
 
         tariffs_data = [
-            {"id": 1, "total_quantity": 30, "ococcupied_quantity": 0},
+            {"total_quantity": 30, "ococcupied_quantity": 0},
         ]
 
-        # Add the tariffs to the database
         for data in tariffs_data:
             tariff = Parking_count(**data)
             db.add(tariff)
-
-        # Commit the changes
         db.commit()
-
-        print("Parking counts values added successfully!")
-    else:
-        print("Parking_count table is not empty. Data not added.")
-
-    # Close the session
     db.close()
 
 
@@ -257,3 +272,26 @@ async def get_parking_place_by_car_license_plate(
         .filter(Parking.license_plate == license_plate, Parking.status == False)
         .first()
     )
+
+async def check_parking_max_limit(db:Session):
+    active_parking_records = db.query(Parking).filter(Parking.status == False).all()
+    if active_parking_records:
+        for parking in active_parking_records:
+            user: User = repository_users.get_user_by_car_license_plate(parking.license_plate, db)
+            if user:
+                current_time = datetime.now()
+                duration = calculate_datetime_difference(parking.enter_time, current_time)
+                tariff = db.query(Tariff).filter_by(id=user.tariff_id).first()
+                amount_paid = calculate_cost(duration, int(tariff.tariff_value))
+                max_limit_value = db.query(Tariff).filter(Tariff.tariff_name == "MAX_LIMIT").first()
+                if amount_paid > max_limit_value:
+                    print (f"Parking payment limit for user {user.username} is exceeded")     
+    db.close()
+
+
+async def schedule_check_parking(db: Session):
+
+    schedule.every().day.at("00:00").do(await check_parking_max_limit, db)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)  # Sleep for 1 second to avoid high CPU usage

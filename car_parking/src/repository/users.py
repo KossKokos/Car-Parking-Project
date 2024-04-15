@@ -93,14 +93,14 @@ async def get_user_by_car_license_plate(
     return None
 
 
-async def calculate_amount_cost(list_of_parking: list[[Parking]]):
+async def calculate_amount_cost(list_of_parking: list[list[Parking]]):
     total_cost = 0
     for park in list_of_parking:
         total_cost += park.amount_paid
     return total_cost
 
 
-async def calculate_amount_duration(list_of_parking: list[[Parking]]):
+async def calculate_amount_duration(list_of_parking: list[list[Parking]]):
     total_duration = 0
     for park in list_of_parking:
         total_duration += park.duration
@@ -129,6 +129,7 @@ async def get_parking_info(license_plate: str, db: Session):
     for parking in parking_info:
         parking_history.parking_info.append(
             ParkingResponse(
+                id=parking.id,
                 enter_time=parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                 departure_time=parking.departure_time.strftime("%Y-%m-%d %H:%M:%S"),
                 license_plate=parking.license_plate,
