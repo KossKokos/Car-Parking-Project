@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from car_parking.src.schemas.parking import CurrentParking
 from pydantic import BaseModel, Field, EmailStr
 
@@ -12,9 +13,11 @@ class UserModel(BaseModel):
 
 
 class UserResponse(BaseModel):
-    username: str = "username"
-    email: EmailStr = "example@gmail.com"
-    license_plate: str
+    id: int = 1
+    username: str = 'username'
+    email: EmailStr = 'example@gmail.com'
+    role: str = "role"
+    banned: Optional[bool] = None
 
     class Config:
         orm_mode = True

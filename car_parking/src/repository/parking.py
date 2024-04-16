@@ -34,29 +34,50 @@ async def create_parking_place(license_plate: str, db: Session):
 
 async def change_parking_status_not_authorised(parking_place_id: int, db: Session):
     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
-    user = (
-        db.query(User).filter(User.license_plate == parking_place.license_plate).first()
-    )
-    departure_time = datetime.now(pytz.timezone("Europe/Kiev"))
+    user = db.query(User).filter(User.license_plate == parking_place.license_plate).first()
+    departure_time = datetime.now(pytz.timezone('Europe/Kiev'))
     duration = calculate_datetime_difference(parking_place.enter_time, departure_time)
     parking_place.status = True
     parking_place.departure_time = departure_time
     parking_place.duration = duration
+    count = db.query(Parking_count).first()
     if user:
         tariff = db.query(Tariff).filter_by(id=user.tariff_id).first()
         parking_place.amount_paid = calculate_cost(duration, int(tariff.tariff_value))
     else:
         tariff = db.query(Tariff).filter_by(id=1).first()
         parking_place.amount_paid = calculate_cost(duration, int(tariff.tariff_value))
+    parking = ParkingSchema(info=ParkingResponse(
+                                    id=parking_place.id,
+                                    enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
+                                    departure_time=parking_place.departure_time,
+                                    license_plate=parking_place.license_plate,
+                                    amount_paid=parking_place.amount_paid,
+                                    duration=parking_place.duration,
+                                    status=False),
+                status=f"The barrier is open, See you next time!")
+    count.ococcupied_quantity -= 1
     db.commit()
-    return parking_place
+    return parking
+
 
 
 async def change_parking_status_authorised(parking_place_id: int, db: Session):
     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
     parking_place.status = True
+    count = db.query(Parking_count).first()
+    parking_status = ParkingSchema(info=ParkingResponse(
+                                            id=parking_place.id,
+                                            enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
+                                            departure_time=parking_place.departure_time,
+                                            license_plate=parking_place.license_plate,
+                                            amount_paid=parking_place.amount_paid,
+                                            duration=parking_place.duration,
+                                            status=False),
+                        status=f"The barrier is open, See you next time!")
+    count.ococcupied_quantity -= 1
     db.commit()
-    return parking_place
+    return parking_status
 
 
 async def calculate_invoice(parking_place_id: int, db: Session):
