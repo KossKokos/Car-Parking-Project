@@ -11,6 +11,7 @@ from ..database.models import User, Tariff
 from ..repository import users as repository_users
 from ..repository import parking as repository_parking
 from ..repository import tariff as repository_tariff
+from ..repository import car as repository_car
 from ..repository.logout import token_to_blacklist
 from ..services.auth import service_auth
 from ..services.plate_reader import pr as PlateReader
@@ -51,6 +52,10 @@ async def enter_parking(background_tasks: BackgroundTasks,
     if license_plate is None:
         return "License plate not found, please send better picture where car is visible"
     
+    car = await repository_car.get_car_by_license_plate(license_plate, db)
+    if car and car.banned == True:
+        return f"Your car << {car.license_plate} >> banned. Contact parking administrator"
+    
     parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user:
@@ -69,7 +74,7 @@ async def enter_parking(background_tasks: BackgroundTasks,
     return parking_place
 
 
-#exit code second version
+
 @router.post('/exit_parking/{license_plate}',
              response_model=ParkingSchema | str,
              status_code=status.HTTP_200_OK,
@@ -89,6 +94,10 @@ async def exit_parking( background_tasks: BackgroundTasks,
 
     if license_plate is None:
         return "License plate not found, please send better picture where car is visible"
+    
+    car = await repository_car.get_car_by_license_plate(license_plate, db)
+    if car and car.banned == True:
+        return f"Your car << {car.license_plate} >> banned. Contact parking administrator"
    
     parking_place = await repository_parking.get_parking_place_by_car_license_plate(license_plate, db)
     if parking_place:

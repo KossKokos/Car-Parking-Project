@@ -101,6 +101,7 @@ async def calculate_invoice(parking_place_id: int, db: Session):
 
 async def entry_to_the_parking(license_plate: str, db: Session):
     car = db.query(Car).filter(Car.license_plate == license_plate).first()
+
     count = db.query(Parking_count).first()
     if count.ococcupied_quantity == count.total_quantity:
         return "Sorry we don't have places for parking"
@@ -145,39 +146,10 @@ async def entry_to_the_parking(license_plate: str, db: Session):
         status="This car already in parking.",
     )
     return parking
-    # else:
-    #     if not parking_place:
-    #         parking_place = await create_parking_place(license_plate, db)
-    #         parking = ParkingSchema(
-    #             info=ParkingResponse(
-    #                 enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
-    #                 departure_time=parking_place.departure_time,
-    #                 license_plate=parking_place.license_plate,
-    #                 amount_paid=parking_place.amount_paid,
-    #                 duration=parking_place.duration,
-    #                 status=False,
-    #             ),
-    #             status="Parking successful, to get details please sign up for our Car Parking service",
-    #         )
-    #         count.ococcupied_quantity += 1
-    #         db.commit()
-    #         return parking
-    #
-    #     parking = ParkingSchema(
-    #         info=ParkingResponse(
-    #             enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
-    #             departure_time=parking_place.departure_time,
-    #             license_plate=parking_place.license_plate,
-    #             amount_paid=parking_place.amount_paid,
-    #             duration=parking_place.duration,
-    #             status=False,
-    #         ),
-    #         status="This car already in parking.",
-    #     )
-    #     return parking
 
 
 async def exit_from_the_parking(license_plate: str, db: Session):
+
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     # if user:
     parking_place = (
@@ -209,30 +181,6 @@ async def exit_from_the_parking(license_plate: str, db: Session):
         )
         return parking
     return "This car not in parking"
-
-    # else:
-    #     parking_place = (
-    #         db.query(Parking)
-    #         .filter(Parking.license_plate == license_plate, Parking.status == False)
-    #         .first()
-    #     )
-    #     if parking_place:
-    #         parking_place = await calculate_invoice(parking_place.id, db)
-    #         parking = ParkingSchema(
-    #             info=ParkingResponse(
-    #                 enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
-    #                 departure_time=parking_place.departure_time.strftime(
-    #                     "%Y-%m-%d %H:%M:%S"
-    #                 ),
-    #                 license_plate=parking_place.license_plate,
-    #                 amount_paid=parking_place.amount_paid,
-    #                 duration=parking_place.duration,
-    #                 status=False,
-    #             ),
-    #             status=f"Your parking ID = << {parking_place.id} >>Confirm payment, please.",
-    #         )
-    #         return parking
-    #     return "This car not in parking"
 
 
 async def seed_parking_count(db: Session):
