@@ -215,27 +215,14 @@ async def exit_from_the_parking(license_plate: str, db: Session):
 
 
 async def seed_parking_count(db: Session):
-    # Check if the Tariff table is empty
     if db.query(Parking_count).count() == 0:
-        # Define data for three tariffs
-
         tariffs_data = [
-            {"id": 1, "total_quantity": 30, "ococcupied_quantity": 0},
+            {"total_quantity": 30, "ococcupied_quantity": 0},
         ]
-
-        # Add the tariffs to the database
         for data in tariffs_data:
             tariff = Parking_count(**data)
             db.add(tariff)
-
-        # Commit the changes
         db.commit()
-
-        print("Parking counts values added successfully!")
-    else:
-        print("Parking_count table is not empty. Data not added.")
-
-    # Close the session
     db.close()
 
 
