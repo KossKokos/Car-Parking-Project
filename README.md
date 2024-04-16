@@ -19,7 +19,6 @@
 - [Документація](#документація)
 - [Ліцензія](#ліцензія)
 - [Учасники](#учасники)
-## Contributors
 
 ## Особливості
 - Управління обліковими записами користувачів.
@@ -38,39 +37,113 @@
 
 
 ## Залежності
-  * python==3.10
+  * absl-py==2.1.0
+  * aiosmtplib==2.0.2
+  * alabaster==0.7.16
   * alembic==1.10.2
+  * anyio==4.3.0
+  * astunparse==1.6.3
+  * async-timeout==4.0.3
+  * attrs==23.2.0
   * babel==2.13.0
   * bcrypt==4.0.1
+  * blinker==1.7.0
+  * cachetools==5.3.3
+  * certifi==2024.2.2
+  * cffi==1.16.0
+  * charset-normalizer==3.3.2
+  * click==8.1.7
   * cloudinary==1.32.0
   * colorama==0.4.6
   * cryptography==41.0.5
+  * dnspython==2.6.1
   * docutils==0.19
-  * fastapi==0.95.0
+  * ecdsa==0.19.0
   * email-validator==1.3.1
+  * exceptiongroup==1.2.0
   * fastapi-limiter==0.1.5
   * fastapi-mail==1.2.7
+  * fastapi==0.95.0
+  * flatbuffers==24.3.25
+  * gast==0.5.4
+  * google-auth-oauthlib==0.4.6
+  * google-auth==2.29.0
+  * google-pasta==0.2.0
+  * greenlet==3.0.3
+  * grpcio==1.62.1
+  * h11==0.14.0
+  * h5py==3.11.0
+  * httpcore==1.0.5
   * httpx==0.25.2
+  * idna==3.7
+  * imagesize==1.4.1
+  * iniconfig==2.0.0
   * jinja2==3.1.2
+  * keras-preprocessing==1.1.2
+  * keras==2.8.
+  * libclang==18.1.1
+  * mako==1.3.3
+  * markdown==3.6
+  * markupsafe==2.1.5
+  * numpy==1.26.4
+  * oauthlib==3.2.2
+  * opencv-python==4.9.0.80
+  * opt-einsum==3.3.0
+  * outcome==1.3.0.post0
+  * packaging==24.0
   * passlib==1.7.4
+  * pillow==10.3.0
+  * pluggy==1.4.0
+  * protobuf==3.20.0
+  * psycopg2-binary==2.9.9
   * psycopg2==2.9.5
+  * pyasn1-modules==0.4.0
+  * pyasn1==0.6.0
+  * pycparser==2.22
   * pydantic==1.10.7
-  * pytest==7.4.3
+  * pygments==2.17.2
+  * pypng==0.20220715.0
+  * pytest-asyncio==0.23.2
   * pytest-mock==3.12.0
+  * pytest==7.4.3
   * python-dotenv==1.0.0
   * python-jose==3.3.0
   * python-multipart==0.0.6
+  * pytz==2024.1
+  * qrcode[pil]==7.4.2
   * redis==4.5.4
+  * requests-oauthlib==2.0.0
   * requests==2.31.0
+  * rsa==4.9
+  * setuptools==69.5.1
+  * six==1.16.0
   * sniffio==1.3.0
+  * snowballstemmer==2.2.0
+  * sortedcontainers==2.4.0
   * sphinx==6.1.3
+  * sphinxcontrib-applehelp==1.0.8
+  * sphinxcontrib-devhelp==1.0.6
+  * sphinxcontrib-htmlhelp==2.0.5
+  * sphinxcontrib-jsmath==1.0.1
+  * sphinxcontrib-qthelp==1.0.7
+  * sphinxcontrib-serializinghtml==1.1.10
   * sqlalchemy==2.0.7
   * starlette==0.26.1
+  * tensorboard-data-server==0.6.1
+  * tensorboard-plugin-wit==1.8.1
+  * tensorboard==2.8.0
+  * tensorflow-io-gcs-filesystem==0.23.1
+  * tensorflow==2.8.0
+  * termcolor==2.4.0
+  * tf-estimator-nightly==2.8.0.dev2021122109
+  * tomli==2.0.1
+  * trio==0.25.0
+  * typing-extensions==4.11.0
   * urllib3==1.26.18
   * uvicorn==0.21.1
-  * pytest-asyncio==0.23.2
-  * pytest-trio==0.8.0
-  * qrcode["pil"]==7.4.2
+  * werkzeug==3.0.2
+  * wheel==0.43.0
+  * wrapt==1.16.0
 
 ## Опис
 
