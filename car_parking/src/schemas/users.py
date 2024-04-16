@@ -16,6 +16,9 @@ class UserResponse(BaseModel):
     email: EmailStr = "example@gmail.com"
     license_plate: str
 
+    class Config:
+        orm_mode = True
+
 
 class UserParkingResponse(BaseModel):
     user: UserResponse

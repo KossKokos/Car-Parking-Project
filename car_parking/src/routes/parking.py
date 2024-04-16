@@ -40,7 +40,7 @@ async def enter_parking(
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user:
         enter_time = parking_place.info.enter_time.strftime("%Y-%m-%d %H:%M:%S")
-        tariff = await repository_tariff.get_tariff_by_tariff_id(user.tariff, db)
+        tariff = await repository_tariff.get_tariff_by_tariff_id(user.tariff_id, db)
         background_tasks.add_task(
             service_email.praking_enter_message,
             user.email,
@@ -70,13 +70,12 @@ async def exit_parking(
     parking_place = await repository_parking.get_parking_place_by_car_license_plate(
         license_plate, db
     )
-    print(parking_place.id)
     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user:
         enter_time = parking_info.info.enter_time.strftime("%Y-%m-%d %H:%M:%S")
         departure_time = parking_info.info.departure_time.strftime("%Y-%m-%d %H:%M:%S")
-        tariff = await repository_tariff.get_tariff_by_tariff_id(user.tariff, db)
+        tariff = await repository_tariff.get_tariff_by_tariff_id(user.tariff_id, db)
         background_tasks.add_task(
             service_email.praking_exit_message,
             user.email,

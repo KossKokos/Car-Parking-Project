@@ -288,7 +288,7 @@ async def unban_car(
 
 @router.get(
     "/search_user/{license_plate}",
-    response_model=UserByCarResponse | str,
+    # response_model=UserByCarResponse | str,
     status_code=status.HTTP_200_OK,
     dependencies=[
         Depends(service_logout.logout_dependency),
@@ -335,28 +335,6 @@ async def get_profile_by_car(license_plate: str, db: Session = Depends(get_db)):
     profile = await repository_users.get_parking_info(license_plate, db)
     print(profile)
     return profile
-
-
-# @router.get("/users")
-# async def get_all_users(db: Session = Depends(get_db)):
-#     users = db.query(User).all()
-#     return users
-
-# @router.put("/users/{user_id}", dependencies=[Depends(service_logout.logout_dependency),
-#                                 Depends(allowd_operation_by_admin)])
-# async def admin_update_user(user_id: int, new_data: dict, db: Session = Depends(get_db)):
-#     user = db.query(User).filter(User.id == user_id).first()
-#     if user:
-#         for key, value in new_data.items():
-#             setattr(user, key, value)
-#         try:
-#             db.commit()
-#             return {"message": "User information updated successfully"}
-#         except Exception as e:
-#             db.rollback()
-#             raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
-#     else:
-#         raise HTTPException(status_code=404, detail="User not found")
 
 
 @router.get(
