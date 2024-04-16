@@ -1,5 +1,4 @@
 import io
-from tkinter import NO
 from PIL import Image
 
 from fastapi import APIRouter, Depends, status, BackgroundTasks, Request
