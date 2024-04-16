@@ -29,7 +29,6 @@ async def read_root():
 def healthchecker(db: Session = Depends(get_db)):
 
     try:
-        # Make request
         result = db.execute(text("SELECT 1")).fetchone()
         print(result)
         if result is None:
@@ -43,14 +42,10 @@ def healthchecker(db: Session = Depends(get_db)):
 
 
 async def main():
-    # Establish database connection
     db = next(get_db())
-    # Seed tariff table if empty
     await repository_tariff.seed_tariff_table(db)
     await repository_parking.seed_parking_count(db)
-    # Close database connection
     db.close()
-    # Start FastAPI server
     uvicorn.run('main:app', host='127.0.0.1', port=8000, reload=True)
 
 if __name__ == '__main__':
