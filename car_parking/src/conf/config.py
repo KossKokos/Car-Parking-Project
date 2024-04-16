@@ -5,6 +5,7 @@ from pydantic import BaseSettings, EmailStr
 
 load_dotenv()
 
+
 class Settings(BaseSettings):
     sqlalchemy_database_url: str = os.environ.get('SQLALCHEMY_DATABASE_URL')
     secret_key: str = os.environ.get('SECRET_KEY')
@@ -26,5 +27,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+
 
 settings = Settings()

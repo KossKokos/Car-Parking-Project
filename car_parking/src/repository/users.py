@@ -9,16 +9,18 @@ from car_parking.src.schemas.users import (
 )
 from car_parking.src.schemas.parking import CurrentParking, ParkingResponse, ParkingInfo
 from datetime import datetime
+from decimal import Decimal
 
 
 def calculate_datetime_difference(start_time, end_time):
     time_difference = end_time - start_time
     hours = time_difference.days * 24 + time_difference.seconds / 3600
-    return float(hours)
+    return round(float(hours), 2)
 
 
 def calculate_cost(hours, cost):
-    return hours * cost
+    result = hours * float(cost)
+    return round(result, 2)
 
 
 async def create_user(body: UserModel, db: Session) -> User:
@@ -75,22 +77,10 @@ async def delete_user(user_id: int, db: Session) -> None:
 
 async def get_user_by_car_license_plate(
     license_plate: str, db: Session
-) -> UserByCarResponse | None:
+) -> User | None:
     license_plate = license_plate.upper()
     user = db.query(User).filter_by(license_plate=license_plate).first()
-    if user:
-        user_resp = UserByCarResponse(
-            id=user.id,
-            username=user.username,
-            email=user.email,
-            created_at=user.created_at,
-            confirmed=user.confirmed,
-            license_plate=user.license_plate,
-            banned=user.banned,
-            tariff=user.tariff_id,
-        )
-        return user_resp
-    return None
+    return user
 
 
 async def calculate_amount_cost(list_of_parking: list[[Parking]]):
