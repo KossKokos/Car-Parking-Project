@@ -1,17 +1,24 @@
+import io
+from tkinter import NO
+from PIL import Image
+
 from fastapi import APIRouter, Depends, status, BackgroundTasks, Request
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
+import numpy as np
 
-from car_parking.src.database.db import get_db
-
-
-from car_parking.src.schemas.parking import ParkingSchema
-from car_parking.src.repository import (
-    users as repository_users,
-    parking as repository_parking,
-    tariff as repository_tariff,
-)
-from car_parking.src.services import (
+from ..database.db import get_db
+from ..database.models import User, Tariff
+from ..repository import users as repository_users
+from ..repository import parking as repository_parking
+from ..repository import tariff as repository_tariff
+from ..repository.logout import token_to_blacklist
+from ..services.auth import service_auth
+from ..services.plate_reader import pr as PlateReader
+from ..schemas.users import UserResponse, UserParkingResponse
+from ..schemas.parking import ParkingInfo, ParkingSchema, ParkingResponse
+from ..conf.extensions import EXTENSIONS
+from ..services import (
     email as service_email,
     roles as service_roles,
 )
@@ -24,18 +31,27 @@ allowd_operation = service_roles.RoleRights(["user", "admin"])
 allowd_operation_by_admin = service_roles.RoleRights(["admin"])
 
 
-@router.post(
-    "/parking/{license_plate}",
-    response_model=ParkingSchema | str,
-    status_code=status.HTTP_200_OK,
-)
-async def enter_parking(
-    license_plate,
-    background_tasks: BackgroundTasks,
-    request: Request,
-    db: Session = Depends(get_db),
-):
-    license_plate = license_plate.upper()
+@router.post('/parking/{license_plate}',
+             response_model=ParkingSchema | str,
+             status_code=status.HTTP_200_OK,
+             )
+async def enter_parking(background_tasks: BackgroundTasks,
+                        request: Request, 
+                        file: UploadFile = File(...),
+                        db: Session = Depends(get_db)):
+    
+    valid_ext = await repository_parking.is_valid_file_ext(file)
+    if not valid_ext:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file extension")
+    
+    request_object_content = await file.read()
+    img = Image.open(io.BytesIO(request_object_content))
+    img = np.array(img, dtype="uint8")
+    license_plate = await PlateReader.get_prediction(img)
+
+    if license_plate is None:
+        return "License plate not found, please send better picture where car is visible"
+    
     parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user:
@@ -54,22 +70,29 @@ async def enter_parking(
     return parking_place
 
 
-# exit code second version
-@router.post(
-    "/exit_parking/{license_plate}",
-    response_model=ParkingSchema | str,
-    status_code=status.HTTP_200_OK,
-)
-async def exit_parking(
-    license_plate,
-    background_tasks: BackgroundTasks,
-    request: Request,
-    db: Session = Depends(get_db),
-):
-    license_plate = license_plate.upper()
-    parking_place = await repository_parking.get_parking_place_by_car_license_plate(
-        license_plate, db
-    )
+#exit code second version
+@router.post('/exit_parking/{license_plate}',
+             response_model=ParkingSchema | str,
+             status_code=status.HTTP_200_OK,
+             )
+async def exit_parking( background_tasks: BackgroundTasks,
+                        request: Request,
+                        file: UploadFile = File(...), 
+                        db: Session = Depends(get_db)):
+    valid_ext = await repository_parking.is_valid_file_ext(file)
+    if not valid_ext:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file extension")
+    
+    request_object_content = await file.read()
+    img = Image.open(io.BytesIO(request_object_content))
+    img = np.array(img, dtype="uint8")
+    license_plate = await PlateReader.get_prediction(img)
+
+    if license_plate is None:
+        return "License plate not found, please send better picture where car is visible"
+   
+    parking_place = await repository_parking.get_parking_place_by_car_license_plate(license_plate, db)
+    print(parking_place.id)
     parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
     user = await repository_users.get_user_by_car_license_plate(license_plate, db)
     if user:
