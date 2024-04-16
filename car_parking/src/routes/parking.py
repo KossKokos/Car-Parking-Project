@@ -1,7 +1,7 @@
 import io
 from PIL import Image
 
-from fastapi import APIRouter, Depends, status, BackgroundTasks, Request
+from fastapi import APIRouter, Depends, status, BackgroundTasks, Request, UploadFile, File, HTTPException
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 import numpy as np

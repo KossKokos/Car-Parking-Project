@@ -5,7 +5,7 @@ from ..database.models import User, Parking, Car, Parking_count, Tariff
 from ..schemas.users import UserModel, UserRoleUpdate, UserParkingResponse, UserResponse
 from ..schemas.parking import CurrentParking, ParkingResponse, ParkingInfo, ParkingSchema
 from ..repository.car import create_car
-from ..conf.tariffs import STANDART, AUTORIZED
+# from ..conf.tariffs import STANDART, AUTORIZED
 from ..conf.extensions import EXTENSIONS
 from ..repository import users as repository_users
 from datetime import datetime, timezone
