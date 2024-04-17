@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 class ParkingResponse(BaseModel):
+    id: int
     enter_time: datetime
     departure_time: datetime | None
     license_plate: str

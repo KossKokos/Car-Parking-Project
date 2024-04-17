@@ -119,6 +119,7 @@ async def entry_to_the_parking(license_plate: str, db: Session):
         parking_place = await create_parking_place(license_plate, db)
         parking = ParkingSchema(
             info=ParkingResponse(
+                id=parking_place.id,
                 enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                 departure_time=parking_place.departure_time,
                 license_plate=parking_place.license_plate,
@@ -136,6 +137,7 @@ async def entry_to_the_parking(license_plate: str, db: Session):
 
     parking = ParkingSchema(
         info=ParkingResponse(
+            id=parking_place.id,
             enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
             departure_time=parking_place.departure_time,
             license_plate=parking_place.license_plate,
@@ -166,6 +168,7 @@ async def exit_from_the_parking(license_plate: str, db: Session):
         parking_place.duration = duration
         parking = ParkingSchema(
             info=ParkingResponse(
+                id=parking_place.id,
                 enter_time=parking_place.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                 departure_time=parking_place.departure_time.strftime(
                     "%Y-%m-%d %H:%M:%S"

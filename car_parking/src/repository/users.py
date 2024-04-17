@@ -119,6 +119,7 @@ async def get_parking_info(license_plate: str, db: Session):
     for parking in parking_info:
         parking_history.parking_info.append(
             ParkingResponse(
+                id=parking.id,
                 enter_time=parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                 departure_time=parking.departure_time.strftime("%Y-%m-%d %H:%M:%S"),
                 license_plate=parking.license_plate,
