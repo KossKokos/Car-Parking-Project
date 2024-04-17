@@ -146,9 +146,11 @@ async def get_user_me(user: User, db: Session):
 
         user_park = UserParkingResponse(
             user=UserResponse(
-                username=user.username,
+                id=user.id,
+                usernam=user.username,
                 email=user.email,
                 license_plate=user.license_plate,
+                banned=user.banned
             ),
             parking=CurrentParking(
                 enter_time=user_parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -159,7 +161,11 @@ async def get_user_me(user: User, db: Session):
         return user_park
     user_park = UserParkingResponse(
         user=UserResponse(
-            username=user.username, email=user.email, license_plate=user.license_plate
+            id=user.id,
+            username=user.username, 
+            email=user.email, 
+            license_plate=user.license_plate,
+            banned=user.banned
         ),
         parking="You don't have a car parked right now.",
     )

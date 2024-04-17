@@ -216,7 +216,7 @@ async def free_parking_places(date: str, db: Session):
         occupied_places = all_places
         return occupied_places
     except Exception:
-        return "Wrong date format"
+        return "Wrong date format. Use format: 2012.12.31 24:59"
 
 
 async def get_parking_place_by_car_license_plate(
