@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from car_parking.src.conf.config import settings
+from ..conf.config import settings
 
 
 SQLALCHEMY_DATABASE_URL = settings.sqlalchemy_database_url

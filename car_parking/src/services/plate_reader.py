@@ -6,7 +6,7 @@ from .vehicle_detector import VehicleDetector
 from pathlib import Path
 
 
-path = str(Path(__file__).parent.parent) + "\models"
+path = str(Path(__file__).parent.parent) + "/models"
 
 # dictionary of all classes so when model predicts number we can look up the digit or letter
 CLASSES = {
@@ -28,7 +28,7 @@ CLASSES = {
 class PlatesReader():
     
     # loading text classifier model
-    model = keras.models.load_model(path + r"\text_classifier.keras")
+    model = keras.models.load_model(path + r"/text_classifier.keras")
     vd = VehicleDetector()
 
     # method to get boxes from image where text is located
@@ -45,7 +45,7 @@ class PlatesReader():
         imgGrayscalePlusTopHat = cv2.add(gray, imgTopHat)
         gray = cv2.subtract(imgGrayscalePlusTopHat, imgBlackHat)
         # blur image
-        img_blurred = cv2.GaussianBlur(gray, ksize=(5, 5), sigmaX=0) # https://docs.opencv.org/4.x/d4/d13/tutorial_py_filtering.html
+        img_blurred = cv2.GaussianBlur(gray, ksize=(5, 5), sigmaX=0)
         # threshold image
         img_thresh = cv2.adaptiveThreshold(
             img_blurred,
@@ -258,9 +258,3 @@ class PlatesReader():
 
 
 pr = PlatesReader()
-# if __name__ == '__main__':
-#     start = time.time()
-#     pr = PlatesReader()
-#     res = asyncio.run(pr.get_prediction(img_path="ford.jpg"))
-#     print(res)
-#     print("Time", time.time() - start)
