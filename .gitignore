@@ -1,0 +1,14 @@
+car_parking/.env
+car_parking/idea
+car_parking/poetry.lock
+car_parking/.venv
+car_parking/postgres-data
+Car_Parking-Project/.vscode
+.vscode
+**/__pycache__
+Car-Parking-Project/car-parking/postgres-data
+car_parking/src/repository_or
+car_parking/src/routes_or
+idea
+main_or.py
+**/.idea
