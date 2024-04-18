@@ -7,7 +7,6 @@
 
 
 ![Logo](https://github.com/KossKokos/Car-Parking-Project/blob/main/car_parking/Logo/logo.jpeg)
-![Logo](https://github.com/KossKokos/Car-Parking-Project/blob/dev/car_parking/Logo/logo.jpeg)
 
 
 
