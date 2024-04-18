@@ -46,7 +46,7 @@ async def main():
     await repository_tariff.seed_tariff_table(db)
     await repository_parking.seed_parking_count(db)
     db.close()
-    uvicorn.run('main:app', host='127.0.0.1', port=8000, reload=True)
+    uvicorn.run('main:app', host='0.0.0.0', port=80, reload=True)
 
 if __name__ == '__main__':
     import asyncio
