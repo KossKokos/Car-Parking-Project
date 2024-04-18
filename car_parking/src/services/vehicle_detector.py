@@ -3,14 +3,14 @@ import numpy as np
 from pathlib import Path
 
 
-path = str(Path(__file__).parent.parent) + "\models"
+path = str(Path(__file__).parent.parent) + "/models"
 
 
 class VehicleDetector:
 
     def __init__(self):
         # Load Network
-        net = cv2.dnn.readNet(path + "\yolov4.weights", path + "\yolov4.cfg")
+        net = cv2.dnn.readNet(path + "/yolov4.weights", path + "/yolov4.cfg")
         self.model = cv2.dnn_DetectionModel(net)
         self.model.setInputParams(size=(832, 832), scale=1 / 255)
 
