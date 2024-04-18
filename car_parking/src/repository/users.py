@@ -150,9 +150,12 @@ async def get_user_me(user: User, db: Session):
                 usernam=user.username,
                 email=user.email,
                 license_plate=user.license_plate,
-                banned=user.banned
+                banned=user.banned,
+                role=user.role
+                
             ),
             parking=CurrentParking(
+                license_plate=user.license_plate,
                 enter_time=user_parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
                 time_on_parking=time_on_parking,
                 parking_cost=current_cost,
@@ -165,7 +168,8 @@ async def get_user_me(user: User, db: Session):
             username=user.username, 
             email=user.email, 
             license_plate=user.license_plate,
-            banned=user.banned
+            banned=user.banned,
+            role=user.role
         ),
         parking="You don't have a car parked right now.",
     )

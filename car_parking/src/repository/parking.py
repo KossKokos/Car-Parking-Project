@@ -80,6 +80,7 @@ async def change_parking_status_authorised(parking_place_id: int, db: Session):
     return parking_status
 
 
+
 async def calculate_invoice(parking_place_id: int, db: Session):
     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
     user = (
@@ -198,26 +199,31 @@ async def seed_parking_count(db: Session):
     db.close()
 
 
-async def free_parking_places(date: str, db: Session):
-    date_format = "%Y.%m.%d %H:%M"
-    try:
-        dt = datetime.strptime(date, date_format)
-        kiev_timezone = pytz.timezone("Europe/Kiev")
-        dt = kiev_timezone.localize(dt)
-        all_parking = db.query(Parking).all()
-        quantity = db.query(Parking_count).first()
-        all_places = 0
-        for parking in all_parking:
-            if parking.enter_time <= dt and (
-                parking.departure_time is None or dt < parking.departure_time
-            ):
-                all_places += 1
-        free_places = quantity.total_quantity - all_places
-        occupied_places = all_places
-        return occupied_places
-    except Exception:
-        return "Wrong date format. Use format: 2012.12.31 24:59"
+# async def free_parking_places(date: str, db: Session):
+#     date_format = "%Y.%m.%d %H:%M"
+#     try:
+#         dt = datetime.strptime(date, date_format)
+#         kiev_timezone = pytz.timezone("Europe/Kiev")
+#         dt = kiev_timezone.localize(dt)
+#         all_parking = db.query(Parking).all()
+#         quantity = db.query(Parking_count).first()
+#         all_places = 0
+#         for parking in all_parking:
+#             if parking.enter_time <= dt and (
+#                 parking.departure_time is None or dt < parking.departure_time
+#             ):
+#                 all_places += 1
+#         free_places = quantity.total_quantity - all_places
+#         occupied_places = all_places
+#         return occupied_places
+#     except Exception:
+#         return "Wrong date format. Use format: 2012.12.31 24:59"
 
+
+async def get_free_parking_places(db: Session):
+    parking_count = db.query(Parking_count).filter(Parking_count.id==1).first()
+    free_spases = parking_count.total_quantity -parking_count.ococcupied_quantity
+    return f" Parking has {free_spases} free parking spaces form {parking_count.total_quantity} available"
 
 async def get_parking_place_by_car_license_plate(
     license_plate: str, db: Session

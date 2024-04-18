@@ -21,6 +21,7 @@ class ParkingInfo(BaseModel):
 
 
 class CurrentParking(BaseModel):
+    license_plate: str | None
     enter_time: datetime | None
     time_on_parking: float
     parking_cost: float

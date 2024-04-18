@@ -349,6 +349,22 @@ async def get_all_users(db: Session = Depends(get_db)):
     return users
 
 
+@router.post(
+    "/create_tariff/{tariff_name}/{tariff_value}",
+    dependencies=[
+        Depends(service_logout.logout_dependency),
+        Depends(allowd_operation_by_admin),
+    ],
+)
+async def create_tariff(
+    tariff_name: str,
+    tariff_value: int,
+    db: Session = Depends(get_db),
+):
+    new_tariff = await repository_admin.add_tariff(tariff_name, tariff_value, db)
+    return new_tariff
+
+
 @router.patch(
     "/change_tariff/{user_id}",
     dependencies=[
@@ -368,17 +384,3 @@ async def change_user_tariff(
         return e
 
 
-@router.post(
-    "/create_tariff/{tariff_name}/{tariff_value}",
-    dependencies=[
-        Depends(service_logout.logout_dependency),
-        Depends(allowd_operation_by_admin),
-    ],
-)
-async def create_tariff(
-    tariff_name: str,
-    tariff_value: int,
-    db: Session = Depends(get_db),
-):
-    new_tariff = await repository_admin.add_tariff(tariff_name, tariff_value, db)
-    return new_tariff

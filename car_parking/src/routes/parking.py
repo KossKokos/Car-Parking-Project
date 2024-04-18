@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 import numpy as np
 
 from ..database.db import get_db
-from ..database.models import User, Tariff
+from ..database.models import Parking, User, Tariff
 from ..repository import users as repository_users
 from ..repository import parking as repository_parking
 from ..repository import tariff as repository_tariff
@@ -129,14 +129,26 @@ async def exit_parking( background_tasks: BackgroundTasks,
             response_model=ParkingSchema | str, 
             status_code=status.HTTP_202_ACCEPTED)
 async def confirm_payment(parking_place_id: str, db: Session = Depends(get_db)):
+    parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
+    if not parking_place: 
+        return f"Ivoice for parking place {parking_place_id} not found."
     parking_staus = await repository_parking.change_parking_status_authorised(parking_place_id, db)
     return parking_staus
 
 
+#original
+# @router.get(
+#     "/free_place/{date}",
+#     status_code=status.HTTP_200_OK,
+# )
+# async def occupied_places(date: str, db: Session = Depends(get_db)):
+#     occupied = await repository_parking.free_parking_places(date, db)
+#     return occupied
+
 @router.get(
-    "/free_place/{date}",
+    "/free_place",
     status_code=status.HTTP_200_OK,
 )
-async def occupied_places(date: str, db: Session = Depends(get_db)):
-    occupied = await repository_parking.free_parking_places(date, db)
+async def free_places(db: Session = Depends(get_db)):
+    occupied = await repository_parking.get_free_parking_places(db)
     return occupied

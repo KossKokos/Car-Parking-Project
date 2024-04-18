@@ -16,7 +16,7 @@ class UserResponse(BaseModel):
     id: int = 1
     username: str = 'username'
     email: EmailStr = 'example@gmail.com'
-    role: str = "role"
+    role: str = 'role'
     banned: Optional[bool] = None
 
     class Config:
