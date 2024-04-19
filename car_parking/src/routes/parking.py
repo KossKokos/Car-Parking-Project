@@ -128,10 +128,14 @@ async def exit_parking( background_tasks: BackgroundTasks,
 @router.get('/confirm_payment/{parking_place_id}',
             response_model=ParkingSchema | str, 
             status_code=status.HTTP_202_ACCEPTED)
-async def confirm_payment(parking_place_id: str, db: Session = Depends(get_db)):
+async def confirm_payment(parking_place_id: int, db: Session = Depends(get_db)):
     parking_place = db.query(Parking).filter(Parking.id == parking_place_id).first()
+
     if not parking_place: 
         return f"Ivoice for parking place {parking_place_id} not found."
+    if parking_place and parking_place.status==True:
+        return f"Parking place with ID: {parking_place_id} already closed."
+        
     parking_staus = await repository_parking.change_parking_status_authorised(parking_place_id, db)
     return parking_staus
 

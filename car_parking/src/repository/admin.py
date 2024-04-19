@@ -58,6 +58,7 @@ async def create_parking_csv(license_plate, filename, db: Session):
             "Name",
             "Total Payment Amount",
             "Total Parking Time",
+            "Parking place ID",
             "enter_time",
             "departure_time",
             "license_plate",
@@ -71,6 +72,7 @@ async def create_parking_csv(license_plate, filename, db: Session):
         for parking_info in parking_history.parking_info:
             writer.writerow(
                 {
+                    "Parking place ID": parking_info.id,
                     "enter_time": parking_info.enter_time,
                     "departure_time": parking_info.departure_time,
                     "license_plate": parking_info.license_plate,
@@ -82,7 +84,7 @@ async def create_parking_csv(license_plate, filename, db: Session):
         writer.writerow({"Name": parking_history.user})
         writer.writerow({"Total Payment Amount": parking_history.total_payment_amount})
         writer.writerow({"Total Parking Time": parking_history.total_parking_time})
-    return "CSV file created"
+    return f"CSV file {filename} created succefully"
 
 
 async def get_user_by_email(email: str, db: Session) -> Optional[User]:

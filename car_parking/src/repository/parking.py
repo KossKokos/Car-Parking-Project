@@ -128,7 +128,7 @@ async def entry_to_the_parking(license_plate: str, db: Session):
                 duration=parking_place.duration,
                 status=False,
             ),
-            status=f"Parking successful, please check your email<< {user.email} >> for details"
+            status=f"The barrier is open. Parking successful, please check your email<< {user.email} >> for details"
             if user
             else "The barrier is open. Parking successful. To get details please sign up for our Car Parking service",
         )
