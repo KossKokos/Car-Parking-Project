@@ -17,7 +17,7 @@ from car_parking.src.repository import (
 )
 from car_parking.src.schemas.parking import ParkingInfo
 from car_parking.src.services.auth import service_auth
-from car_parking.src.schemas.users import UserResponse, UserRoleUpdate, UserByCarResponse
+from car_parking.src.schemas.users import UserResponse, UserRoleUpdate
 
 from car_parking.src.services import (
     roles as service_roles,
@@ -198,7 +198,6 @@ async def change_user_role(
 
 @router.patch(
     "/ban_car/{license_plate}",
-    # response_model=CarResponse,
     status_code=status.HTTP_200_OK,
     dependencies=[
         Depends(service_logout.logout_dependency),
@@ -243,7 +242,6 @@ async def ban_car(
 
 @router.patch(
     "/unban_car/{license_plate}",
-    # response_model=CarResponse,
     status_code=status.HTTP_200_OK,
     dependencies=[
         Depends(service_logout.logout_dependency),
@@ -288,7 +286,6 @@ async def unban_car(
 
 @router.get(
     "/search_user/{license_plate}",
-    # response_model=UserByCarResponse | str,
     status_code=status.HTTP_200_OK,
     dependencies=[
         Depends(service_logout.logout_dependency),

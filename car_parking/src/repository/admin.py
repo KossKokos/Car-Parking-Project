@@ -1,15 +1,14 @@
-from car_parking.src.database.models import Tariff, User
-
-from car_parking.src.schemas.users import UserRoleUpdate
 import csv
 import os
 from pathlib import Path
+from typing import Optional, Type
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from typing import Optional, Type
+from car_parking.src.database.models import Tariff, User
 from car_parking.src.repository import users as repository_users
+from car_parking.src.schemas.users import UserRoleUpdate
 
 
 async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:

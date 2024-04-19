@@ -5,11 +5,9 @@ from car_parking.src.schemas.users import (
     UserModel,
     UserParkingResponse,
     UserResponse,
-    UserByCarResponse,
 )
 from car_parking.src.schemas.parking import CurrentParking, ParkingResponse, ParkingInfo
 from datetime import datetime
-from decimal import Decimal
 
 
 def calculate_datetime_difference(start_time, end_time):

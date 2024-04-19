@@ -94,37 +94,6 @@ async def praking_enter_message(
         print(err)
 
 
-# original code
-# async def praking_exit_message(email: EmailStr,
-#                                username: str,
-#                                license_plate:str,
-#                                enter_time,
-#                                tariff_name,
-#                                tariff_value,
-#                                host: str) -> None:
-
-#     try:
-#         token_verification = await service_auth.create_email_token({"sub": email})
-#         message = MessageSchema(
-#             subject="Invoice for payment",
-#             recipients=[email],
-#             template_body={"host": host,
-#                            "username": username,
-#                            "license_plate": license_plate,
-#                            "enter_time" :enter_time,
-#                            "tariff_name": tariff_name,
-#                            "tariff_value": tariff_value,
-#                            "token": token_verification},
-#             subtype=MessageType.html
-#         )
-
-#         fm = FastMail(conf)
-#         await fm.send_message(message, template_name="praking_exit_message.html")
-#     except ConnectionErrors as err:
-#         print(err)
-
-
-# second version
 async def praking_exit_message(
     email: EmailStr,
     username: str,
