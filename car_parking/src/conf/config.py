@@ -1,32 +1,55 @@
-import os
+import json
 
-from dotenv import load_dotenv
+from pathlib import Path
+from typing import List
+
 from pydantic import BaseSettings, EmailStr
 
-load_dotenv()
-
+ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env.local"
 
 class Settings(BaseSettings):
-    sqlalchemy_database_url: str = os.environ.get('SQLALCHEMY_DATABASE_URL')
-    secret_key: str = os.environ.get('SECRET_KEY')
-    algorithm: str = os.environ.get('ALGORITHM')
-    mail_username: str = os.environ.get('MAIL_USERNAME')
-    mail_password: str = os.environ.get('MAIL_PASSWORD')
-    mail_from: EmailStr = os.environ.get('MAIL_FROM')
-    mail_port: int = os.environ.get('MAIL_PORT')
-    mail_server: str = os.environ.get('MAIL_SERVER')
-    cloudinary_name: str = os.environ.get('CLOUDINARY_NAME')
-    cloudinary_api_key: str = os.environ.get('CLOUDINARY_API_KEY')
-    cloudinary_api_secret: str = os.environ.get('CLOUDINARY_API_SECRET')
-    redis_name: str = os.environ.get('REDIS_NAME')
-    redis_password: str = os.environ.get('REDIS_PASSWORD')
-    redis_host: str = os.environ.get('REDIS_HOST')
-    redis_port: int = os.environ.get('REDIS_PORT')
-    redis_db: int = os.environ.get('REDIS_DB')
+    
+    # API SECRETS
+    SECRET_KEY: str = "SECRET_KEY"
+    ALGORITHM: str = "ALGORITHM"
+
+    # POSTGRESQL URL
+    SQLALCHEMY_DATABASE_URL: str = "SQLALCHEMY_DATABASE_URL"
+
+    # REDIS CONNECTION
+    REDIS_DB: int = 0
+    REDIS_USER: str = "REDIS_USER"
+    REDIS_PASSWORD: str = "REDIS_PASSWORD"
+    REDIS_HOST: str = "REDIS_HOST"
+    REDIS_PORT: int = 6380
+
+    # REDIS URL
+    REDIS_URL: str = "redis://localhost:6380/0"
+
+    # EMAIL CONNECTION
+    MAIL_USERNAME: str = "MAIL_USERNAME"
+    MAIL_PASSWORD: str = "MAIL_PASSWORD"
+    MAIL_FROM: EmailStr = "example@example.com"
+    MAIL_PORT: int = 587
+    MAIL_SERVER: str = "MAIL_SERVER"
+
+    # CLOUDINARY CONNECTION
+    CLOUDINARY_NAME: str = "CLOUDINARY_NAME"
+    CLOUDINARY_API_KEY: str = "CLOUDINARY_API_KEY"
+    CLOUDINARY_API_SECRET: str = "CLOUDINARY_API_SECRET"
+
+    # DATABASE CHECKS
+    REQUIRED_TABLES: List[str] = []
 
     class Config:
-        env_file = ".env"
+        env_file = ENV_FILE
         env_file_encoding = "utf-8"
 
+    # classmethod to parse varibles like REQUIRED_TABLES from json to python format
+    @classmethod
+    def parse_json_list(cls, value):
+        if isinstance(value, str):
+            return json.loads(value)
+        return value
 
 settings = Settings()

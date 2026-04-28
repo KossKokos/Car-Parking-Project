@@ -1,5 +1,10 @@
 import pytz
+from datetime import datetime
+from decimal import Decimal
+
 from sqlalchemy.orm import Session
+
+from car_parking.src.schemas.parking import CurrentParking, ParkingResponse, ParkingInfo
 from car_parking.src.database.models import User, Parking, Tariff, Car
 from car_parking.src.schemas.users import (
     UserModel,
@@ -7,18 +12,20 @@ from car_parking.src.schemas.users import (
     UserResponse,
     UserByCarResponse,
 )
-from car_parking.src.schemas.parking import CurrentParking, ParkingResponse, ParkingInfo
-from datetime import datetime
-from decimal import Decimal
 
 
-def calculate_datetime_difference(start_time, end_time):
+from ..services.parking_calculations import (
+    calculate_parking_cost,
+    calculate_parking_duration_hours,
+)
+
+def calculate_parking_duration_hours(start_time, end_time):
     time_difference = end_time - start_time
     hours = time_difference.days * 24 + time_difference.seconds / 3600
     return round(float(hours), 2)
 
 
-def calculate_cost(hours, cost):
+def calculate_parking_cost(hours, cost):
     result = hours * float(cost)
     return round(result, 2)
 
@@ -138,10 +145,10 @@ async def get_user_me(user: User, db: Session):
     )
     tariff = db.query(Tariff).filter_by(id=user.tariff_id).first()
     if user_parking:
-        time_on_parking = calculate_datetime_difference(
+        time_on_parking = calculate_parking_duration_hours(
             user_parking.enter_time, datetime.now(pytz.timezone("Europe/Kiev"))
         )
-        current_cost = calculate_cost(time_on_parking, tariff.tariff_value)
+        current_cost = calculate_parking_cost(time_on_parking, tariff.tariff_value)
 
         user_park = UserParkingResponse(
             user=UserResponse(

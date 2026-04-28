@@ -17,13 +17,13 @@ from car_parking.src.conf.config import settings
 
 class Auth:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    SECRET_KEY = settings.secret_key
-    ALGORITHM = settings.algorithm
+    SECRET_KEY = settings.SECRET_KEY
+    ALGORITHM = settings.ALGORITHM
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
     r_cashe = redis.Redis(
-        host=settings.redis_host,
-        port=settings.redis_port,
-        password=settings.redis_password,
+        host=settings.REDIS_HOST,
+        port=settings.REDIS_PORT,
+        password=settings.REDIS_PASSWORD,
     )
 
     def verify_password(self, plain_password, hashed_password):

@@ -13,3 +13,12 @@ idea
 main_or.py
 **/.idea
 .env
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+.env
+*.env
+.env.local
+!.example.env

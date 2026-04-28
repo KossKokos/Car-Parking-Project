@@ -8,11 +8,11 @@ from car_parking.src.services.auth import service_auth
 from car_parking.src.conf.config import settings
 
 conf = ConnectionConfig(
-    MAIL_USERNAME=settings.mail_username,
-    MAIL_PASSWORD=settings.mail_password,
-    MAIL_FROM=EmailStr(settings.mail_from),
-    MAIL_PORT=settings.mail_port,
-    MAIL_SERVER=settings.mail_server,
+    MAIL_USERNAME=settings.MAIL_USERNAME,
+    MAIL_PASSWORD=settings.MAIL_PASSWORD,
+    MAIL_FROM=EmailStr(settings.MAIL_FROM),
+    MAIL_PORT=settings.MAIL_PORT,
+    MAIL_SERVER=settings.MAIL_SERVER,
     MAIL_FROM_NAME="Car parking",
     MAIL_STARTTLS=False,
     MAIL_SSL_TLS=True,
