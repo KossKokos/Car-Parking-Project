@@ -8,3 +8,4 @@ TARIFFS_DATA = [
             {"tariff_name": "MAX_LIMIT", "tariff_value": 1000},
         ]
 RESPONSE_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+DEFAULT_TARIFF_ID = 1

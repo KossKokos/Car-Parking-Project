@@ -1,23 +1,26 @@
 import io
 from PIL import Image
 
-from fastapi import APIRouter, Depends, status, BackgroundTasks, Request, UploadFile, File, HTTPException
-from fastapi.security import HTTPBearer
-from sqlalchemy.orm import Session
 import numpy as np
+from sqlalchemy.orm import Session
 
+from fastapi import (
+    APIRouter, Depends, status, 
+    BackgroundTasks, Request, UploadFile, 
+    File, HTTPException
+)
+from fastapi.security import HTTPBearer
+
+from ..utils.parking_helpers import _get_active_parking_place_by_license_plate
 from ..database.db import get_db
-from ..database.models import User, Tariff
+
 from ..repository import users as repository_users
 from ..repository import parking as repository_parking
 from ..repository import tariff as repository_tariff
 from ..repository import car as repository_car
-from ..repository.logout import token_to_blacklist
-from ..services.auth import service_auth
+
+from ..schemas.parking import ParkingSchema
 from ..services.plate_reader import pr as PlateReader
-from ..schemas.users import UserResponse, UserParkingResponse
-from ..schemas.parking import ParkingInfo, ParkingSchema, ParkingResponse
-from ..conf.extensions import EXTENSIONS
 from ..services import (
     email as service_email,
     roles as service_roles,
@@ -99,7 +102,7 @@ async def exit_parking( background_tasks: BackgroundTasks,
     if car and car.banned == True:
         return f"Your car << {car.license_plate} >> banned. Contact parking administrator"
    
-    parking_place = await repository_parking.get_parking_place_by_car_license_plate(license_plate, db)
+    parking_place = _get_active_parking_place_by_license_plate(license_plate, db)
     if parking_place:
         parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
         user = await repository_users.get_user_by_car_license_plate(license_plate, db)
