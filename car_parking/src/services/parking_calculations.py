@@ -17,7 +17,7 @@ def calculate_parking_duration_hours(start_time: datetime, end_time: datetime) -
     return round(float(hours), 2)
 
 
-def calculate_parking_cost(hours: Number, hourly_rate: Number) -> float:
+def calculate_parking_cost(hours: float, hourly_rate: float) -> float:
     """
     Calculate parking cost.
     - multiplies duration by tariff value

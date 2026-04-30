@@ -1,45 +1,36 @@
-import pytz
 from datetime import datetime
-from decimal import Decimal
 
+import pytz
 from sqlalchemy.orm import Session
 
-from car_parking.src.schemas.parking import CurrentParking, ParkingResponse, ParkingInfo
-from car_parking.src.database.models import User, Parking, Tariff, Car
+from car_parking.src.conf.constants import DEFAULT_USER_TARIFF_ID, ADMIN_USER_ID, RESPONSE_DATETIME_FORMAT
+from car_parking.src.database.models import Car, Parking, Tariff, User
+from car_parking.src.schemas.parking import CurrentParking, ParkingInfo, ParkingResponse
 from car_parking.src.schemas.users import (
     UserModel,
     UserParkingResponse,
     UserResponse,
-    UserByCarResponse,
 )
-
+from car_parking.src.utils.users_helpers import _format_datetime_for_response, _get_car_by_license_plate, _get_closed_parking_sessions_by_license_plate, _get_current_parking_session_by_license_plate, _normalize_license_plate, calculate_amount_cost, calculate_amount_duration
 
 from ..services.parking_calculations import (
     calculate_parking_cost,
     calculate_parking_duration_hours,
 )
 
-def calculate_parking_duration_hours(start_time, end_time):
-    time_difference = end_time - start_time
-    hours = time_difference.days * 24 + time_difference.seconds / 3600
-    return round(float(hours), 2)
-
-
-def calculate_parking_cost(hours, cost):
-    result = hours * float(cost)
-    return round(result, 2)
-
 
 async def create_user(body: UserModel, db: Session) -> User:
     user = User(**body.dict())
-    print(body)
-    user.license_plate = body.license_plate.upper()
-    user.tariff_id = 2
+    user.license_plate = _normalize_license_plate(body.license_plate)
+    user.tariff_id = DEFAULT_USER_TARIFF_ID
+
     db.add(user)
     db.commit()
-    if user.id == 1:
+
+    if user.id == ADMIN_USER_ID:
         user.role = "admin"
         db.commit()
+
     db.refresh(user)
     return user
 
@@ -83,38 +74,28 @@ async def delete_user(user_id: int, db: Session) -> None:
 
 
 async def get_user_by_car_license_plate(
-    license_plate: str, db: Session
+    license_plate: str,
+    db: Session,
 ) -> User | None:
-    license_plate = license_plate.upper()
-    user = db.query(User).filter_by(license_plate=license_plate).first()
-    return user
-
-
-async def calculate_amount_cost(list_of_parking: list[[Parking]]):
-    total_cost = 0
-    for park in list_of_parking:
-        total_cost += park.amount_paid
-    return total_cost
-
-
-async def calculate_amount_duration(list_of_parking: list[[Parking]]):
-    total_duration = 0
-    for park in list_of_parking:
-        total_duration += park.duration
-    return total_duration
+    return db.query(User).filter_by(
+        license_plate=_normalize_license_plate(license_plate)
+    ).first()
 
 
 async def get_parking_info(license_plate: str, db: Session):
-    user = await get_user_by_car_license_plate(license_plate, db)
-    license_plate = license_plate.upper()
-    car = db.query(Car).filter(Car.license_plate == license_plate).first()
+    normalized_license_plate = _normalize_license_plate(license_plate)
+
+    user = await get_user_by_car_license_plate(normalized_license_plate, db)
+    car = _get_car_by_license_plate(normalized_license_plate, db)
+
     if not car:
         return "This car is not registered"
-    parking_info = (
-        db.query(Parking)
-        .filter(Parking.license_plate == license_plate, Parking.status == True)
-        .all()
+
+    parking_info = _get_closed_parking_sessions_by_license_plate(
+        normalized_license_plate,
+        db,
     )
+
     total_payment_amount = await calculate_amount_cost(parking_info)
     total_parking_time = await calculate_amount_duration(parking_info)
     parking_history = ParkingInfo(
@@ -126,8 +107,8 @@ async def get_parking_info(license_plate: str, db: Session):
     for parking in parking_info:
         parking_history.parking_info.append(
             ParkingResponse(
-                enter_time=parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
-                departure_time=parking.departure_time.strftime("%Y-%m-%d %H:%M:%S"),
+                enter_time=_format_datetime_for_response(parking.enter_time),
+                departure_time=_format_datetime_for_response(parking.departure_time),
                 license_plate=parking.license_plate,
                 amount_paid=parking.amount_paid,
                 duration=parking.duration,
@@ -138,10 +119,9 @@ async def get_parking_info(license_plate: str, db: Session):
 
 
 async def get_user_me(user: User, db: Session):
-    user_parking = (
-        db.query(Parking)
-        .filter(Parking.license_plate == user.license_plate, Parking.status == False)
-        .first()
+    user_parking = _get_current_parking_session_by_license_plate(
+        user.license_plate,
+        db,
     )
     tariff = db.query(Tariff).filter_by(id=user.tariff_id).first()
     if user_parking:
@@ -157,7 +137,7 @@ async def get_user_me(user: User, db: Session):
                 license_plate=user.license_plate,
             ),
             parking=CurrentParking(
-                enter_time=user_parking.enter_time.strftime("%Y-%m-%d %H:%M:%S"),
+                enter_time=_format_datetime_for_response(user_parking.enter_time),
                 time_on_parking=time_on_parking,
                 parking_cost=current_cost,
             ),

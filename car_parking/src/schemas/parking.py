@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, TypeAlias, TypedDict
 from datetime import datetime
 from pydantic import BaseModel
 
@@ -28,3 +28,30 @@ class CurrentParking(BaseModel):
 class ParkingSchema(BaseModel):
     info: ParkingResponse
     status: str
+
+
+class ParkingAvailabilityResponse(BaseModel):
+    requested_at: str
+    timezone: str
+    total_places: int
+    occupied_places: int
+    free_places: int
+
+
+ParkingOperationResult: TypeAlias = ParkingSchema | str
+LegacyFreePlacesResult: TypeAlias = int | str
+
+
+class ParkingAvailabilityData(TypedDict):
+    requested_at: str
+    timezone: str
+    total_places: int
+    occupied_places: int
+    free_places: int
+
+
+class CurrentParkingAvailabilityData(TypedDict):
+    total_places: int
+    occupied_places: int
+    free_places: int
+    stored_occupied_quantity: int

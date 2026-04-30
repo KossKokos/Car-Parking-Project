@@ -1,6 +1,6 @@
 import pytz
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -133,3 +133,36 @@ def _get_user_by_license_plate(
     db: Session,
 ) -> User | None:
     return db.query(User).filter(User.license_plate == license_plate).first()
+
+
+def _format_route_datetime(value) -> str:
+    if hasattr(value, "strftime"):
+        return value.strftime("%Y-%m-%d %H:%M:%S")
+
+    return str(value)
+
+
+def _normalize_datetime_to_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        value = pytz.timezone("Europe/London").localize(value)
+
+    return value.astimezone(timezone.utc)
+                            
+
+def _count_occupied_places_at(
+    requested_at: datetime,
+    db: Session,
+) -> int:
+    requested_at_utc = _normalize_datetime_to_utc(requested_at)
+
+    return (
+        db.query(Parking)
+        .filter(
+            Parking.enter_time <= requested_at_utc,
+            (
+                (Parking.departure_time.is_(None))
+                | (Parking.departure_time > requested_at_utc)
+            ),
+        )
+        .count()
+    )
