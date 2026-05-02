@@ -38,7 +38,7 @@ class ParkingAvailabilityResponse(BaseModel):
     free_places: int
 
 
-ParkingOperationResult: TypeAlias = ParkingSchema | str
+ParkingOperationResult: TypeAlias = ParkingSchema
 LegacyFreePlacesResult: TypeAlias = int | str
 
 

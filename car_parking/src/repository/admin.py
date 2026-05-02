@@ -10,6 +10,18 @@ from sqlalchemy.orm import Session
 
 from typing import Optional, Type
 from car_parking.src.repository import users as repository_users
+from car_parking.src.services.csv_generator import _build_csv_file_path
+
+
+async def get_tariff_by_name(
+    tariff_name: str,
+    db: Session,
+) -> Tariff | None:
+    return (
+        db.query(Tariff)
+        .filter(Tariff.tariff_name == tariff_name.upper())
+        .first()
+    )
 
 
 async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
@@ -33,27 +45,31 @@ async def return_all_users(db: Session) -> dict:
     return usernames
 
 
-async def update_banned_status(user: User, db: Session):
-    user.banned = True
+async def set_user_banned_status(
+    user: User,
+    is_banned: bool,
+    db: Session,
+) -> User:
+    user.banned = is_banned
     db.commit()
     db.refresh(user)
     return user
 
 
-async def update_unbanned_status(user: User, db: Session):
-    user.banned = False
-    db.commit()
-    db.refresh(user)
-    return user
+async def create_parking_csv(
+    license_plate: str,
+    filename: str,
+    db: Session,
+) -> str:
+    normalized_license_plate = license_plate.upper()
+    file_path = _build_csv_file_path(filename)
 
+    parking_history = await repository_users.get_parking_info(
+        normalized_license_plate,
+        db,
+    )
 
-async def create_parking_csv(license_plate, filename, db: Session):
-    default_dir = r"\csv_files"
-    path = str(Path(__file__).parent.parent.parent) + default_dir
-    file_path = os.path.join(path, f"{filename}.csv")
-    user = await repository_users.get_user_by_car_license_plate(license_plate, db)
-    parking_history = await repository_users.get_parking_info(license_plate, db)
-    with open(file_path, "w", newline="") as csvfile:
+    with file_path.open("w", newline="", encoding="utf-8") as csvfile:
         fieldnames = [
             "Name",
             "Total Payment Amount",
@@ -65,6 +81,7 @@ async def create_parking_csv(license_plate, filename, db: Session):
             "duration",
             "status",
         ]
+
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -79,10 +96,12 @@ async def create_parking_csv(license_plate, filename, db: Session):
                     "status": parking_info.status,
                 }
             )
+
         writer.writerow({"Name": parking_history.user})
         writer.writerow({"Total Payment Amount": parking_history.total_payment_amount})
         writer.writerow({"Total Parking Time": parking_history.total_parking_time})
-    return "CSV file created"
+
+    return f"CSV file created: {file_path.name}"
 
 
 async def get_user_by_email(email: str, db: Session) -> Optional[User]:
@@ -114,23 +133,56 @@ async def change_tariff(
     user_id: int,
     new_tariff: str,
     db: Session,
-):
+) -> User:
     user = await repository_users.get_user_by_id(user_id=user_id, db=db)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
 
-    tariff = db.query(Tariff).filter(Tariff.tariff_name == new_tariff).first()
-    if not tariff:
-        raise HTTPException(status_code=404, detail="Tariff not found")
+    if user is None:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    tariff = await get_tariff_by_name(new_tariff, db)
+
+    if tariff is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Tariff not found",
+        )
 
     user.tariff_id = tariff.id
+
     db.commit()
     db.refresh(user)
-    return {"message": "Tariff changed successfully"}
+
+    return user
 
 
-async def add_tariff(tariff_name: str, tariff_cost: int, db: Session):
-    new_tariff = Tariff(tariff_name=tariff_name, tariff_value=tariff_cost)
+async def add_tariff(
+    tariff_name: str,
+    tariff_cost: int,
+    db: Session,
+) -> Tariff:
+    normalized_tariff_name = tariff_name.upper()
+
+    existing_tariff = await get_tariff_by_name(
+        normalized_tariff_name,
+        db,
+    )
+
+    if existing_tariff is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Tariff {normalized_tariff_name} already exists",
+        )
+
+    new_tariff = Tariff(
+        tariff_name=normalized_tariff_name,
+        tariff_value=tariff_cost,
+    )
+
     db.add(new_tariff)
     db.commit()
-    return f"Tariff {tariff_name} has been created"
+    db.refresh(new_tariff)
+
+    return new_tariff

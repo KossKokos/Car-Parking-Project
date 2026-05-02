@@ -16,7 +16,9 @@ from fastapi import (
     status,
 )
 
-from ..conf.constants import LICENSE_PLATE_NOT_FOUND_MESSAGE
+from car_parking.src.services.exceptions.parking_exceptions import ParkingError
+
+from ..conf.constants import LICENSE_PLATE_NOT_FOUND_DETAIL, LICENSE_PLATE_NOT_FOUND_MESSAGE
 
 from ..database.db import get_db
 from ..schemas.parking import ParkingAvailabilityResponse, ParkingSchema
@@ -25,11 +27,10 @@ from ..repository import car as repository_car
 from ..repository import parking as repository_parking
 from ..repository import tariff as repository_tariff
 from ..repository import users as repository_users
-from ..utils.parking_helpers import _format_route_datetime
+from ..utils.parking_helpers import _format_route_datetime, _raise_for_parking_error
 
 from ..services import email as service_email
 from ..services.plate_reader import pr as PlateReader
-
 
 router = APIRouter(prefix="/parking", tags=["parking"])
 
@@ -87,7 +88,7 @@ async def _schedule_parking_enter_email(
     enter_time = _format_route_datetime(parking_place.info.enter_time)
 
     background_tasks.add_task(
-        service_email.praking_enter_message,
+        service_email.parking_enter_message,
         user.email,
         user.username,
         user.license_plate,
@@ -118,7 +119,7 @@ async def _schedule_parking_exit_email(
     departure_time = _format_route_datetime(parking_info.info.departure_time)
 
     background_tasks.add_task(
-        service_email.praking_exit_message,
+        service_email.parking_exit_message,
         user.email,
         user.username,
         user.license_plate,
@@ -142,23 +143,31 @@ async def _handle_enter_parking(
     license_plate = await _detect_license_plate_from_upload(file)
 
     if license_plate is None:
-        return LICENSE_PLATE_NOT_FOUND_MESSAGE
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=LICENSE_PLATE_NOT_FOUND_DETAIL,
+        )
 
     banned_message = await _get_banned_car_message_or_none(license_plate, db)
 
     if banned_message:
-        return banned_message
-
-    parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
-
-    if isinstance(parking_place, ParkingSchema):
-        await _schedule_parking_enter_email(
-            background_tasks=background_tasks,
-            request=request,
-            parking_place=parking_place,
-            license_plate=license_plate,
-            db=db,
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=banned_message,
         )
+
+    try:
+        parking_place = await repository_parking.entry_to_the_parking(license_plate, db)
+    except ParkingError as error:
+        _raise_for_parking_error(error)
+    
+    await _schedule_parking_enter_email(
+        background_tasks=background_tasks,
+        request=request,
+        parking_place=parking_place,
+        license_plate=license_plate,
+        db=db,
+    )
 
     return parking_place
 
@@ -177,7 +186,10 @@ async def _handle_exit_parking(
     banned_message = await _get_banned_car_message_or_none(license_plate, db)
 
     if banned_message:
-        return banned_message
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=banned_message,
+        )
 
     parking_place = await repository_parking.get_parking_place_by_car_license_plate(
         license_plate,
@@ -185,19 +197,24 @@ async def _handle_exit_parking(
     )
 
     if not parking_place:
-        return f"Parking place for car {license_plate} not found"
-
-    parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
-
-    if isinstance(parking_info, ParkingSchema):
-        await _schedule_parking_exit_email(
-            background_tasks=background_tasks,
-            request=request,
-            parking_info=parking_info,
-            parking_place_id=parking_place.id,
-            license_plate=license_plate,
-            db=db,
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Parking place for car {license_plate} not found",
         )
+
+    try:
+        parking_info = await repository_parking.exit_from_the_parking(license_plate, db)
+    except ParkingError as error:
+        _raise_for_parking_error(error)
+
+    await _schedule_parking_exit_email(
+        background_tasks=background_tasks,
+        request=request,
+        parking_info=parking_info,
+        parking_place_id=parking_place.id,
+        license_plate=license_plate,
+        db=db,
+    )
 
     return parking_info
 ############################################################################################################################
@@ -205,7 +222,7 @@ async def _handle_exit_parking(
 ############################################################################################################################
 @router.post(
     "/parking/{license_plate}",
-    response_model=ParkingSchema | str,
+    response_model=ParkingSchema,
     status_code=status.HTTP_200_OK,
     include_in_schema=False,
 )
@@ -225,7 +242,7 @@ async def enter_parking_legacy(
 
 @router.post(
     "/enter",
-    response_model=ParkingSchema | str,
+    response_model=ParkingSchema,
     status_code=status.HTTP_200_OK,
 )
 async def enter_parking(
@@ -244,7 +261,7 @@ async def enter_parking(
 
 @router.post(
     "/exit_parking/{license_plate}",
-    response_model=ParkingSchema | str,
+    response_model=ParkingSchema,
     status_code=status.HTTP_200_OK,
     include_in_schema=False,
 )
@@ -265,7 +282,7 @@ async def exit_parking_legacy(
 
 @router.post(
     "/exit",
-    response_model=ParkingSchema | str,
+    response_model=ParkingSchema,
     status_code=status.HTTP_200_OK,
 )
 async def exit_parking(
@@ -284,18 +301,20 @@ async def exit_parking(
 
 @router.get(
     "/confirm_payment/{parking_place_id}",
-    response_model=ParkingSchema | str,
+    response_model=ParkingSchema,
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def confirm_payment(
     parking_place_id: int,
     db: Session = Depends(get_db),
 ):
-    parking_status = await repository_parking.confirm_authorised_payment(
-        parking_place_id,
-        db,
-    )
-    return parking_status
+    try:
+        return await repository_parking.confirm_authorised_payment(
+            parking_place_id,
+            db,
+        )
+    except ParkingError as error:
+        _raise_for_parking_error(error)
 
 
 @router.get(

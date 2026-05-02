@@ -15,15 +15,12 @@ async def get_car_by_license_plate(license_plate: str, db: Session) -> Car | Non
     return db.query(Car).filter(Car.license_plate == license_plate).first()
 
 
-async def update_car_banned_status(car: Car, db: Session):
-    car.banned = True
-    db.commit()
-    db.refresh(car)
-    return car
-
-
-async def update_car_unbanned_status(car: Car, db: Session):
-    car.banned = False
+async def set_car_banned_status(
+    car: Car,
+    is_banned: bool,
+    db: Session,
+) -> Car:
+    car.banned = is_banned
     db.commit()
     db.refresh(car)
     return car

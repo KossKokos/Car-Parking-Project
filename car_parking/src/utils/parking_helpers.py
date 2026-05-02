@@ -1,13 +1,23 @@
+from fastapi import HTTPException, status
 import pytz
 
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from car_parking.src.conf.constants import DEFAULT_TARIFF_ID, RESPONSE_DATETIME_FORMAT
+from car_parking.src.conf.constants import DEFAULT_TARIFF_ID, PARKING_ALREADY_CLOSED_DETAIL, PARKING_FULL_DETAIL, RESPONSE_DATETIME_FORMAT
+
 from car_parking.src.database.models import Parking, ParkingCount, Tariff, User
 from car_parking.src.schemas.parking import ParkingResponse, ParkingSchema
+
 from car_parking.src.services.parking_calculations import calculate_parking_duration_hours, calculate_parking_cost
+from car_parking.src.services.exceptions.parking_exceptions import (
+    CarNotInParkingError, 
+    ParkingAlreadyClosedError, 
+    ParkingError, 
+    ParkingFullError, 
+    ParkingPlaceNotFoundError
+)
 
 
 def _format_datetime_for_response(value: datetime | None) -> str | None:
@@ -165,4 +175,29 @@ def _count_occupied_places_at(
             ),
         )
         .count()
+    )
+
+
+def _raise_for_parking_error(error: ParkingError) -> None:
+    if isinstance(error, ParkingFullError):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        )
+
+    if isinstance(error, ParkingAlreadyClosedError):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        )
+
+    if isinstance(error, (ParkingPlaceNotFoundError, CarNotInParkingError)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=str(error),
     )

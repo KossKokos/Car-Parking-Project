@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import List
 import pytz
 
 from sqlalchemy.orm import Session
@@ -12,8 +11,14 @@ from ..database.models import Parking, Car, ParkingCount
 from ..repository import users as repository_users
 from ..repository.car import create_car
 
-from ..conf.constants import PARKING_AVAILABILITY_DATETIME_FORMAT, PARKING_COUNT_DATA, TIMEZONE
-from ..conf.extensions import EXTENSIONS
+from ..conf.constants import EXTENSIONS, PARKING_AVAILABILITY_DATETIME_FORMAT, PARKING_COUNT_DATA, TIMEZONE
+
+from ..services.exceptions.parking_exceptions import (
+    CarNotInParkingError,
+    ParkingAlreadyClosedError,
+    ParkingFullError,
+    ParkingPlaceNotFoundError,
+)
 
 
 async def get_parking_place_by_car_license_plate(
@@ -73,10 +78,10 @@ async def confirm_authorised_payment(
     parking_place = helpers._get_parking_place_by_id(parking_place_id, db)
 
     if parking_place is None:
-        return "Parking place not found"
+        raise ParkingPlaceNotFoundError("Parking place not found.")
 
     if parking_place.status is True:
-        return "Parking place is already closed"
+        raise ParkingAlreadyClosedError("Parking place is already closed.")
 
     parking_place.status = True
 
@@ -95,11 +100,12 @@ async def confirm_authorised_payment(
 async def calculate_invoice(
     parking_place_id: int,
     db: Session,
-) -> Parking | None:
+) -> Parking:
     parking_place = helpers._get_parking_place_by_id(parking_place_id, db)
 
     if parking_place is None:
-        return None
+        raise ParkingPlaceNotFoundError("Parking place not found.")
+    
     user = helpers._get_user_by_license_plate(parking_place.license_plate, db)
 
     parking_place = helpers._apply_invoice_to_parking_place(
@@ -121,7 +127,7 @@ async def entry_to_the_parking(
     parking_count = helpers._get_parking_count(db)
 
     if helpers._is_parking_full(parking_count):
-        return "Sorry we don't have places for parking"
+        raise ParkingFullError("Sorry, there are no available parking places.")
 
     if not car:
         await create_car(license_plate, db)
@@ -184,7 +190,7 @@ async def exit_from_the_parking(
         )
 
         return parking
-    return "This car not in parking"
+    raise CarNotInParkingError(f"Car {license_plate} is not currently in parking.")
 
 
 async def seed_parking_count(db: Session) -> None:
@@ -195,25 +201,6 @@ async def seed_parking_count(db: Session) -> None:
             db.add(parking_count)
 
         db.commit()
-
-
-# async def free_parking_places(date: str, db: Session):
-#     date_format = "%Y.%m.%d %H:%M"
-#     try:
-#         dt = datetime.strptime(date, date_format)
-#         kiev_timezone = pytz.timezone("Europe/Kiev")
-#         dt = kiev_timezone.localize(dt)
-#         all_parking = db.query(Parking).all()
-#         quantity = db.query(ParkingCount).first()
-#         all_places = 0
-#         for parking in all_parking:
-#             if parking.enter_time <= dt and (
-#                 parking.departure_time is None or dt < parking.departure_time
-#             ):
-#                 all_places += 1
-#         return all_places
-#     except Exception:
-#         return "Wrong date format"
 
 
 async def is_valid_file_ext(file: File) -> bool:

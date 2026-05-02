@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from fastapi.security import HTTPBearer
 from sqlalchemy.orm import Session
 
@@ -11,14 +11,34 @@ from car_parking.src.schemas.parking import ParkingInfo
 from car_parking.src.services import (
     roles as service_roles,
     logout as service_logout,
-    banned as service_banned,
+    banned as service_banned
 )
+from car_parking.src.services.exceptions import user_exceptions as user_exception
 
 router = APIRouter(prefix="/users", tags=["users"])
 security = HTTPBearer()
 
 allowd_operation = service_roles.RoleRights(["user", "admin"])
 allowd_operation_by_admin = service_roles.RoleRights(["admin"])
+
+
+def _raise_for_user_domain_error(error: user_exception.UserDomainError) -> None:
+    if isinstance(error, (user_exception.CarNotRegisteredError, user_exception.UserNotFoundError)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        )
+
+    if isinstance(error, user_exception.UserTariffNotFoundError):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(error),
+        )
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=str(error),
+    )
 
 
 @router.get(
@@ -35,8 +55,10 @@ async def read_users_me(
     current_user: User = Depends(service_auth.get_current_user),
     db: Session = Depends(get_db),
 ):
-    user = await repository_users.get_user_me(current_user, db)
-    return user
+    try:
+        return await repository_users.get_user_me(current_user, db)
+    except user_exception.UserDomainError as error:
+        _raise_for_user_domain_error(error)
 
 
 @router.get(
@@ -54,8 +76,10 @@ async def get_user_profile(
     current_user: User = Depends(service_auth.get_current_user),
     db: Session = Depends(get_db),
 ):
-    user_profile = await repository_users.get_parking_info(
-        current_user.license_plate, db
-    )
-
-    return user_profile
+    try:
+        return await repository_users.get_parking_info(
+            current_user.license_plate,
+            db,
+        )
+    except user_exception.UserDomainError as error:
+        _raise_for_user_domain_error(error)
