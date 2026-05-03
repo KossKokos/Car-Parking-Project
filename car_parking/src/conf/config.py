@@ -5,7 +5,7 @@ from typing import List
 
 from pydantic import BaseSettings, EmailStr
 
-ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env.local"
+ENV_FILE = Path(__file__).parent.parent.parent.parent / ".env"
 
 class Settings(BaseSettings):
     

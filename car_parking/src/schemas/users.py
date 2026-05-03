@@ -14,11 +14,9 @@ class UserModel(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: int
     username: str
     email: EmailStr
-    role: str
-    banned: bool | None = None
+    license_plate: str = Field(..., min_length=2, max_length=30)
 
     class Config:
         orm_mode = True
