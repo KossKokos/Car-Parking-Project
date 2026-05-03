@@ -272,7 +272,7 @@ async def signup(
 
 @router.post(
     "/login",
-    response_model=schema_token.TokenResponce,
+    response_model=schema_token.TokenResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def login(
@@ -293,7 +293,7 @@ async def login(
 
 @router.get(
     "/refresh_token",
-    response_model=schema_token.TokenResponce,
+    response_model=schema_token.TokenResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def refresh_token(

@@ -8,7 +8,7 @@ CSV_DIRECTORY = Path(__file__).resolve().parents[2] / "csv_files"
 SAFE_FILENAME_PATTERN = re.compile(r"^[a-zA-Z0-9_-]+$")
 
 
-def _build_csv_file_path(filename: str) -> Path:
+def build_csv_file_path(filename: str) -> Path:
     if not SAFE_FILENAME_PATTERN.fullmatch(filename):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

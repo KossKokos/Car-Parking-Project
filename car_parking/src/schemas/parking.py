@@ -1,6 +1,7 @@
-from typing import List, TypeAlias, TypedDict
 from datetime import datetime
-from pydantic import BaseModel
+from typing import TypeAlias, TypedDict
+
+from pydantic import BaseModel, Field
 
 
 class ParkingResponse(BaseModel):
@@ -16,7 +17,7 @@ class ParkingInfo(BaseModel):
     user: str
     total_payment_amount: float
     total_parking_time: float
-    parking_info: List[ParkingResponse] | None
+    parking_info: list[ParkingResponse] = Field(default_factory=list)
 
 
 class CurrentParking(BaseModel):

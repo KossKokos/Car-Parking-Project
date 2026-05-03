@@ -1,16 +1,12 @@
-from car_parking.src.database.models import Tariff, User
-
-from car_parking.src.schemas.users import UserRoleUpdate
 import csv
-import os
-from pathlib import Path
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from typing import Optional, Type
+from car_parking.src.database.models import Tariff, User
 from car_parking.src.repository import users as repository_users
-from car_parking.src.services.csv_generator import _build_csv_file_path
+from car_parking.src.schemas.users import UserRoleUpdate
+from car_parking.src.services.csv_generator import build_csv_file_path
 
 
 async def get_tariff_by_name(
@@ -24,25 +20,30 @@ async def get_tariff_by_name(
     )
 
 
-async def change_user_role(user: User, body: UserRoleUpdate, db: Session) -> User:
+async def change_user_role(
+    user: User,
+    body: UserRoleUpdate,
+    db: Session,
+) -> User:
     user.role = body.role
+
     db.commit()
     db.refresh(user)
+
     return user
 
 
-async def delete_user(user_id: int, db: Session) -> None:
-    user = db.query(User).filter(User.id == user_id).first()
-    if user:
-        db.delete(user)
-        db.commit()
-    return None
+async def return_all_users(db: Session) -> dict[str, str]:
+    users: list = db.query(User).all()
+
+    return {
+        f"username(id: {user.id})": user.username
+        for user in users
+    }
 
 
-async def return_all_users(db: Session) -> dict:
-    users = db.query(User).all()
-    usernames = {f"username(id: {user.id})": user.username for user in users}
-    return usernames
+async def get_all_users(db: Session) -> list[User]:
+    return db.query(User).all()
 
 
 async def set_user_banned_status(
@@ -51,8 +52,10 @@ async def set_user_banned_status(
     db: Session,
 ) -> User:
     user.banned = is_banned
+
     db.commit()
     db.refresh(user)
+
     return user
 
 
@@ -62,7 +65,7 @@ async def create_parking_csv(
     db: Session,
 ) -> str:
     normalized_license_plate = license_plate.upper()
-    file_path = _build_csv_file_path(filename)
+    file_path = build_csv_file_path(filename)
 
     parking_history = await repository_users.get_parking_info(
         normalized_license_plate,
@@ -104,41 +107,19 @@ async def create_parking_csv(
     return f"CSV file created: {file_path.name}"
 
 
-async def get_user_by_email(email: str, db: Session) -> Optional[User]:
-    return db.query(User).filter_by(email=email).first()
-
-
-# async def admin_edit_user(user_id, new_data):
-#     user_info = await get_user_by_email(user_id, db)
-#     if user_info:
-#         user = db.query(User).filter_by(id=user_id).first()
-#         for key, value in new_data.items():
-#             setattr(user, key, value)
-#         try:
-#             db.commit()
-#             print("Інформація про користувача успішно оновлена.")
-#         except Exception as e:
-#             db.rollback()
-#             raise HTTPException(status_code=500, detail=f"Failed to update user: {str(e)}")
-#     else:
-#         print("Користувача з таким ID не знайдено.")
-
-
-async def get_all_users(db: Session) -> list[Type[User]]:
-    users = db.query(User).all()
-    return users
-
-
 async def change_tariff(
     user_id: int,
     new_tariff: str,
     db: Session,
 ) -> User:
-    user = await repository_users.get_user_by_id(user_id=user_id, db=db)
+    user = await repository_users.get_user_by_id(
+        user_id=user_id,
+        db=db,
+    )
 
     if user is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
 
@@ -146,7 +127,7 @@ async def change_tariff(
 
     if tariff is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Tariff not found",
         )
 
@@ -172,7 +153,7 @@ async def add_tariff(
 
     if existing_tariff is not None:
         raise HTTPException(
-            status_code=409,
+            status_code=status.HTTP_409_CONFLICT,
             detail=f"Tariff {normalized_tariff_name} already exists",
         )
 
