@@ -1,6 +1,7 @@
-from typing import List
 from datetime import datetime
-from pydantic import BaseModel
+from typing import TypeAlias, TypedDict
+
+from pydantic import BaseModel, Field
 
 
 class ParkingResponse(BaseModel):
@@ -16,7 +17,7 @@ class ParkingInfo(BaseModel):
     user: str
     total_payment_amount: float
     total_parking_time: float
-    parking_info: List[ParkingResponse] | None
+    parking_info: list[ParkingResponse] = Field(default_factory=list)
 
 
 class CurrentParking(BaseModel):
@@ -28,3 +29,30 @@ class CurrentParking(BaseModel):
 class ParkingSchema(BaseModel):
     info: ParkingResponse
     status: str
+
+
+class ParkingAvailabilityResponse(BaseModel):
+    requested_at: str
+    timezone: str
+    total_places: int
+    occupied_places: int
+    free_places: int
+
+
+ParkingOperationResult: TypeAlias = ParkingSchema
+LegacyFreePlacesResult: TypeAlias = int | str
+
+
+class ParkingAvailabilityData(TypedDict):
+    requested_at: str
+    timezone: str
+    total_places: int
+    occupied_places: int
+    free_places: int
+
+
+class CurrentParkingAvailabilityData(TypedDict):
+    total_places: int
+    occupied_places: int
+    free_places: int
+    stored_occupied_quantity: int

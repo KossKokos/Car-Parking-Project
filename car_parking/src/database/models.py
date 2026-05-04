@@ -62,15 +62,6 @@ class Parking(Base):
     car = relationship("Car", uselist=False, back_populates="parking_place")
 
 
-"""
-# Define an event listener to automatically update exit_time
-@event.listens_for(Parking.car, 'remove')
-def update_exit_time(target, value, oldvalue, initiator):
-    if value is not None:
-        target.exit_time = func.now()
-"""
-
-
 class Car(Base):
     __tablename__ = "cars_table"
 
@@ -89,13 +80,37 @@ class Tariff(Base):
     tariff_value = Column(Numeric, default=20)
     user = relationship("User", back_populates="tariff")
 
+    def __repr__(self) -> str:
+        return (
+            f"Tariff("
+            f"id={self.id!r}, "
+            f"tariff_name={self.tariff_name!r}, "
+            f"tariff_value={self.tariff_value!r}"
+            f")"
+        )
 
-class Parking_count(Base):
+
+class ParkingCount(Base):
     __tablename__ = "parking_count_table"
 
     id = Column(Integer, primary_key=True)
     total_quantity = Column(Integer, nullable=False, default=30)
-    ococcupied_quantity = Column(Integer, default=0)
+    # Changed typo in name
+    occupied_quantity = Column(Integer, default=0)
+
+    def __repr__(self) -> str:
+        return (
+            f"ParkingCount("
+            f"id={self.id!r}, "
+            f"total_quantity={self.total_quantity!r}, "
+            f"occupied_quantity={self.occupied_quantity!r}"
+            f")"
+        )
+
+
+# Backwards-compatible alias for old imports.
+# TODO: Replace all Parking_count imports/usages with ParkingCount,
+# then remove this alias.
 
 
 class BlacklistedToken(Base):
